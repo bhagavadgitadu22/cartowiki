@@ -1,0 +1,290 @@
+body { margin:0; padding:0; background-color: #109177; }
+
+
+/* positionnement éléments */
+
+#map { position: absolute; top:0%; bottom:0%; right:0%; left:0%; }
+
+
+/* stylise le compteur de date */
+
+#slider_date input[type="number"] {
+    border: none;
+    border-radius: 4px;
+    width: 100%;
+	background-color: #e8eeef;
+	font-family: Georgia; 
+	color: black; 
+	font-size:30px; 
+	padding-top: 5px; 
+	padding-bottom: 7px; 
+	padding-left: 11px; 
+	padding-right: 7px;
+	margin-bottom: 0;
+}
+
+
+/* stylise le colorimètre */
+
+#html5colorpicker{
+	padding: 0;
+    height: 100px;
+    width: 100px;
+}
+
+
+/* stylise les formulaires */
+
+.form-style-5 {
+	text-align: center;
+    font-family: Georgia, "Times New Roman", Times, serif;
+	font-size: 14px;
+	color: black;
+}
+
+.form-style-5 label {
+	position: relative;
+	display: block;
+	margin-top: 11px;
+}
+
+.form-style-5 .liste_modifications {
+	font-size: 12px;
+}
+
+.form-style-5 .formulaire_caracs {
+	margin-bottom: 6px;
+}
+
+.form-style-5 table {
+	display: flex;
+	border-collapse:separate; 
+	border-spacing:0 20px; 
+	font-size: 14px;
+}
+
+.form-style-5 td:not(:last-child) { padding: 0 10px 0 0; }
+
+
+.form-style-5 input[type="text"],
+.form-style-5 input[type="date"],
+.form-style-5 input[type="datetime"],
+.form-style-5 input[type="email"],
+.form-style-5 input[type="number"],
+.form-style-5 input[type="search"],
+.form-style-5 input[type="time"],
+.form-style-5 input[type="url"],
+.form-style-5 input[type="password"],
+.form-style-5 textarea,
+.form-style-5 select {
+	position: relative;
+	display : block;
+    font-family: Georgia, "Times New Roman", Times, serif;
+    background: rgba(255,255,255,.1);
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    margin: 0;
+    outline: 0;
+    padding: 7px;
+    width: 100%;
+    box-sizing: border-box; 
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box; 
+    background-color: #e8eeef;
+    color:#8a97a0;
+    -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.03) inset;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.03) inset;
+    margin-bottom: 16px;
+}
+
+
+.form-style-5 input[type="text"]:focus,
+.form-style-5 input[type="date"]:focus,
+.form-style-5 input[type="datetime"]:focus,
+.form-style-5 input[type="email"]:focus,
+.form-style-5 input[type="number"]:focus,
+.form-style-5 input[type="search"]:focus,
+.form-style-5 input[type="time"]:focus,
+.form-style-5 input[type="url"]:focus,
+.form-style-5 input[type="password"]:focus,
+.form-style-5 textarea:focus,
+.form-style-5 select:focus{
+    background: #d2d9dd;
+}
+
+.form-style-5 .number {
+    background: #1abc9c;
+    color: #fff;
+    height: 30px;
+    width: 30px;
+    display: inline-block;
+    font-size: 0.8em;
+    margin-right: 4px;
+    line-height: 30px;
+    text-align: center;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.2);
+    border-radius: 15px 15px 15px 0px;
+}
+
+
+/* pour la charte */
+#charte_cartowiki {
+	text-align:justify;
+}
+#charte_cartowiki h1 {
+	padding-top: 5px;
+	font-size: 14px;
+}
+#charte_cartowiki h2 {
+	font-size: 12px;
+}
+#charte_cartowiki p {
+	font-size: 12px;
+}
+.ui-dialog > .ui-widget-header
+{
+	border: none;
+	background: #109177;
+}
+.ui-dialog-title {
+	color: white;
+	font-size: 14pt;
+}
+.ui-dialog .ui-dialog-titlebar .ui-dialog-titlebar-close {
+   background: #1abc9c;
+   border-radius: 5px;
+   margin-right: 5px;
+   border: none;
+}
+.ui-dialog.ui-widget-content { 
+	background: rgba(211, 211, 211, 0.95); 
+    padding: 0px;
+	
+	border-radius: 5px;
+	border: 2px solid rgba(0, 0, 0, 0.2);
+    -webkit-background-clip: padding-box; /* for Safari */
+    background-clip: padding-box; /* for IE9+, Firefox 4+, Opera, Chrome */
+}
+
+
+/* pour les boutons */
+
+input[type="submit"],
+button[type="button"]
+{
+    position: relative;
+	display : block;
+	border:none;
+	padding: 9px 14px 9px 14px;
+	border-radius: 8px;
+	background: #1abc9c;
+	font: bold 18px Arial;
+	color: #fff;
+    margin: 0 auto;
+	margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+#overflow > button[type="button"]
+{
+	border-radius: 5px;
+	display: inline;
+    padding: 4px 8px 4px 8px;
+    font-size: 15px;
+	margin-right: 5px;
+	margin-top: 10px;
+    margin-bottom: 0px;
+}
+
+input[type="submit"]:disabled,
+button[type="button"]:disabled,
+input[type="submit"]:active,
+button[type="button"]:active
+{
+    background: #109177;
+}
+
+input[type="submit"]:hover,
+button[type="button"]:hover,
+.bouton_image:hover,
+b[onclick]
+{
+    cursor: pointer;
+}
+
+
+/* pour pouvoir centrer des controls dans Leaflet */
+
+.leaflet-center {
+    left: 50%;
+    transform: translate(-50%, 0%);
+}
+
+.leaflet-middle {
+    top: 50%;
+    position: absolute;
+    z-index: 1000;
+    pointer-events: none;
+  transform: translate(0%, -50%);
+
+}
+
+.leaflet-center.leaflet-middle {
+  transform: translate(-50%, -50%);
+}
+
+
+/* pour avoir un joli slider */
+
+.slider_play {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 15px;
+  border-radius: 5px;  
+  background: #797979;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+  margin-bottom: 10px;
+}
+
+.slider_play::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  border: 0;
+  border-radius: 50%; 
+  background: #4CAF50;
+  cursor: pointer;
+}
+
+.slider_play::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  border: 0;
+  border-radius: 50%;
+  background: #1abc9c;
+  cursor: pointer;
+}
+
+
+/* pour autocomplete */
+
+.ui-autocomplete {
+	max-height: 100px;
+	overflow-y: auto;
+	/* prevent horizontal scrollbar */
+	overflow-x: auto;
+}
+/* IE 6 doesn't support max-height
+* we use height instead, but this forces the menu to always be this tall
+*/
+  * html .ui-autocomplete {
+	height: 100px;
+}
+.ui-front {
+    z-index: 9999999 !important;
+}
