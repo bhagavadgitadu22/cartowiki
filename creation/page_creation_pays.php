@@ -96,8 +96,8 @@
 				
 				<div class="form-style-5" style="text-align: center;">
 					<label style="margin-bottom: 10px">Frontières en l'an :</label>
-					<input type="number" id="input_decalque_annee" min="-3000" max="2020" value="0" style="width: 40%; display:inline-block;"></input>
-					<input type="range" id="slider_decalque_annee" min="-3000" max="2020" value="0" class="slider_play"></input>
+					<input type="number" id="input_decalque_annee" min="-3000" max="2022" value="0" style="width: 40%; display:inline-block;"></input>
+					<input type="range" id="slider_decalque_annee" min="-3000" max="2022" value="0" class="slider_play"></input>
 				</div>
 				
 			</div>
@@ -209,7 +209,7 @@
 		
 	<div id="slider_range"></div>
 	
-	<div id="slider_date"><input type="number" id="slider_date_annee" min="-3000" max="2020" value="0"></input></div>
+	<div id="slider_date"><input type="number" id="slider_date_annee" min="-3000" max="2022" value="0"></input></div>
 	
 <script type='text/javascript'>
 // changement Leaflet
@@ -277,7 +277,7 @@ var anciennes_caracs = {};
 var annee;
 
 var min_annee = -3000;
-var max_annee = 2020;
+var max_annee = 2022;
 
 // variables de copier-coller
 var selection = [];
@@ -312,7 +312,7 @@ var map = L.map('map', {
 	attributionControl: false
 }).setView([46.988332, 2.605527], 5);
 
-L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain-background/{z}/{x}/{y}{r}.{ext}', {
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 	noWrap: true,
 	attribution: '',
 	subdomains: 'abcd',
@@ -785,7 +785,7 @@ var bottom_slider = L.Control.extend({
 		$(sliderContainer).css("display", "flex");
 		$(sliderContainer).css("align-items", "center");
 		
-		$(sliderContainer).append('<div id="slider_range" style="float:left; width:88%;"></div><div id="slider_date" style="float: right; width: 120px; padding-left:1%;"><input type="number" id="slider_date_annee" min="-3000" max="2020" value="0" style="font-family: Georgia; color: black; font-size:30px; padding-top: 5px; padding-bottom: 7px; padding-left: 11px; padding-right: 7px;"></input></div>');
+		$(sliderContainer).append('<div id="slider_range" style="float:left; width:88%;"></div><div id="slider_date" style="float: right; width: 120px; padding-left:1%;"><input type="number" id="slider_date_annee" min="-3000" max="2022" value="0" style="font-family: Georgia; color: black; font-size:30px; padding-top: 5px; padding-bottom: 7px; padding-left: 11px; padding-right: 7px;"></input></div>');
 		
 		L.DomEvent.disableClickPropagation(sliderContainer);
 		L.DomEvent.disableScrollPropagation(sliderContainer);

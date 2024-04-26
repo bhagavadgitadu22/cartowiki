@@ -190,13 +190,13 @@ var caracs = {};
 var annee;
 
 var min_annee = -3000;
-var max_annee = 2020;
+var max_annee = 2022;
 
 var caracs_a_cette_date = {};
 
 var myPlayer;
 
-var max_villes_simultanees = 25;
+var max_villes_simultanees = 50;
 
 
 // initialisation
@@ -205,13 +205,12 @@ var map = L.map('map', {
 	attributionControl: false
 }).setView([46.988332, 2.605527], 5);
 
-L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain-background/{z}/{x}/{y}{r}.{ext}', {
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 	noWrap: true,
 	attribution: '',
 	subdomains: 'abcd',
 	minZoom: 1,
-	maxZoom: 18,
-	ext: 'png'
+	maxZoom: 18
 }).addTo(map);
 
 // patterns for the capitals
@@ -305,7 +304,7 @@ var bottom_slider = L.Control.extend({
 		$(sliderContainer).css("display", "flex");
 		$(sliderContainer).css("align-items", "center");
 		
-		$(sliderContainer).append('<div id="slider_range" style="float:left; width:88%;"></div><div id="slider_date" style="float: right; width: 120px; padding-left:1%;"><input type="number" id="slider_date_annee" min="-3000" max="2020" value="0" style="font-family: Georgia; color: black; font-size:30px; padding-top: 5px; padding-bottom: 7px; padding-left: 11px; padding-right: 7px;"></input></div>');
+		$(sliderContainer).append('<div id="slider_range" style="float:left; width:88%;"></div><div id="slider_date" style="float: right; width: 120px; padding-left:1%;"><input type="number" id="slider_date_annee" min="-3000" max="2022" value="0" style="font-family: Georgia; color: black; font-size:30px; padding-top: 5px; padding-bottom: 7px; padding-left: 11px; padding-right: 7px;"></input></div>');
 		
 		L.DomEvent.disableClickPropagation(sliderContainer);
 		L.DomEvent.disableScrollPropagation(sliderContainer);
@@ -365,6 +364,7 @@ $( "#slider_play" ).change(function(e) {
 $.post('dialogue_BDD_site/recuperation_formes.php', function(result) {
 	
 		result = result.split(";;;");
+        console.log(result);
 		
 		figures = JSON.parse(result[0]);
 
