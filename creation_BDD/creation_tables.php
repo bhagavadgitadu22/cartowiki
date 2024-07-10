@@ -34,5 +34,3 @@ $bdd->exec('CREATE TABLE formes (	id int NOT NULL AUTO_INCREMENT,
 
 
 $bdd = NULL;
-
-?>

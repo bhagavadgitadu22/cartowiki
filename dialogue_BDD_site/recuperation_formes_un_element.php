@@ -302,5 +302,3 @@ if ($type_element == "pays" && !(isset($_POST["decalque"])))
 
 
 $bdd = NULL;
-
-?>

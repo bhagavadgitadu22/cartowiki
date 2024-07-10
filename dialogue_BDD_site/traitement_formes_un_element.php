@@ -134,5 +134,3 @@ if (!$aucun_ajout_carac)
 
 
 $bdd = NULL;
-
-?>
