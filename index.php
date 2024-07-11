@@ -891,7 +891,7 @@ function affichage_figures()
 
 function get_polygon_centroid(pts) {
 	// make a copy of ths pts array that doesn't modify pts when modified
-	var ptsCopy = pts.slice();
+	var ptsCopy = JSON.parse(JSON.stringify(pts));
 	var first = ptsCopy[0], last = ptsCopy[ptsCopy.length-1];
 	if (first[0] != last[0] || first[1] != last[1]) {
 		ptsCopy.push(first);
