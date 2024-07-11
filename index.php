@@ -539,7 +539,7 @@ function determination_caracs_a_cette_date()
 function affichage_figures()
 {
 	// pour ne garder que les villes les plus grandes de la région concernée
-	var populations_triees = [];
+	var populations_villes_triees = [];
 	var map_bounds = map.getBounds();
 	
 	for (var iden in caracs["latLng"]) 
@@ -556,36 +556,36 @@ function affichage_figures()
 				
 				if (typeof(population_id) != "undefined" && population_id[0] != "" && population_id[0] != "inconnu")
 				{
-					populations_triees.push([iden, population_id[0]]);
+					populations_villes_triees.push([iden, population_id[0]]);
 				}
 				
 				else
 				{
-					populations_triees.push([iden, 0]);
+					populations_villes_triees.push([iden, 0]);
 				}
 			}
 		}
 	}
 
-	populations_triees.sort(function(a, b) {
+	populations_villes_triees.sort(function(a, b) {
 		return b[1] - a[1];
 	});
 	
-	var iden_populations_triees = [];
-	for (var id in populations_triees)
+	var iden_populations_villes_triees = [];
+	for (var id in populations_villes_triees)
 	{
-		id_pop = parseInt(populations_triees[id][0]);
-		valeur = populations_triees[id][1];
+		id_pop = parseInt(populations_villes_triees[id][0]);
+		valeur = populations_villes_triees[id][1];
 		
-		iden_populations_triees.push(id_pop);
+		iden_populations_villes_triees.push(id_pop);
 	}
 
 	// détermination du max à cette année
-	var max_pop_local;
+	var max_pop_local_ville;
 	
-	if (populations_triees.length != 0)
+	if (populations_villes_triees.length != 0)
 	{
-		max_pop_local = populations_triees[0][1];
+		max_pop_local_ville = populations_villes_triees[0][1];
 	}
 	
 	
@@ -745,7 +745,7 @@ function affichage_figures()
 			}
 			else
 			{
-				geojsonMarkerOptions.radius = Math.max(15*Math.sqrt(population_id[0]/max_pop_local), 3);
+				geojsonMarkerOptions.radius = Math.max(15*Math.sqrt(population_id[0]/max_pop_local_ville), 3);
 				geojsonMarkerOptions.weight = 1;
 				geojsonMarkerOptions.fillOpacity = 1;
 				
@@ -785,7 +785,7 @@ function affichage_figures()
 			function(feature) {
 				if ((feature.properties.annee_debut <= annee) && (annee <= feature.properties.annee_fin) && (feature.properties.type_element == "ville"))
 				{
-					id = iden_populations_triees.indexOf(feature.properties.id_element);
+					id = iden_populations_villes_triees.indexOf(feature.properties.id_element);
 					if (id != -1 && id < max_villes_simultanees)
 					{
 						return true;
