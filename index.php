@@ -556,8 +556,6 @@ function affichage_figures()
 				{
 					population_id = caracs_villes_a_cette_date["population"][iden];
 				}
-				// console.log("population_id");
-				// console.log(population_id);
 				
 				if (typeof(population_id) != "undefined" && population_id[0] != "" && population_id[0] != "inconnu")
 				{
@@ -584,7 +582,8 @@ function affichage_figures()
 		
 		iden_populations_villes_triees.push(id_pop);
 	}
-	// console.log(populations_villes_triees);
+	console.log("populations_villes_triees");
+	console.log(populations_villes_triees);
 
 	// détermination du max à cette année
 	var max_pop_local_ville;
@@ -624,13 +623,13 @@ function affichage_figures()
 			{
 				continue;
 			}
-			var idPays = figures.features[idMultipolygon].properties.id_element;
+			var id_pays = figures.features[idMultipolygon].properties.id_element;
 			var population_id = [0,0];
-			if (idPays in caracs_villes_a_cette_date["population_etat"])
+			if (id_pays in caracs_villes_a_cette_date["population_etat"])
 			{
-				population_id = caracs_villes_a_cette_date["population_etat"][idPays];
+				population_id = caracs_villes_a_cette_date["population_etat"][id_pays];
 			}
-			if(idPays == 508){
+			if(id_pays == 508){
 				console.log("population_id");
 				console.log(population_id);
 				console.log("polygon");
@@ -641,12 +640,12 @@ function affichage_figures()
 			
 			if (typeof(population_id) != "undefined" && population_id[0] != "" && population_id[0] != "inconnu")
 			{
-				populations_pays_triees.push([idPays, centroid, population_id[0]]);
+				populations_pays_triees.push([id_pays, population_id[0], centroid]);
 			}
 			
 			else
 			{
-				populations_pays_triees.push([idPays, centroid, 0]);
+				populations_pays_triees.push([id_pays, 0, centroid]);
 			}
 		}
 	}
@@ -660,8 +659,8 @@ function affichage_figures()
 	var iden_populations_pays_triees = [];
 	for (var id in populations_pays_triees)
 	{
-		id_pop = parseInt(populations_pays_triees[id][0]);
-		valeur = populations_pays_triees[id][1];
+		id_pop = populations_pays_triees[id][0];
+		valeur_population = populations_pays_triees[id][1];
 		
 		iden_populations_pays_triees.push(id_pop);
 	}
@@ -673,7 +672,8 @@ function affichage_figures()
 	{
 		max_pop_local_pays = populations_pays_triees[0][1];
 	}
-	
+	console.log("max_pop_local_pays");
+	console.log(max_pop_local_pays);
 	
 	
 	geoJSONlayer_pays = new L.geoJSON(figures, {
