@@ -185,14 +185,14 @@ var geoJSONlayer_villes;
 var id_actif = "";
 var type_actif;
 
-var caracs = {};
+var caracs_villes = {};
 
 var annee;
 
 var min_annee = -3000;
 var max_annee = 2022;
 
-var caracs_a_cette_date = {};
+var caracs_villes_a_cette_date = {};
 
 var myPlayer;
 
@@ -304,7 +304,7 @@ var bottom_slider = L.Control.extend({
 		$(sliderContainer).css("display", "flex");
 		$(sliderContainer).css("align-items", "center");
 		
-		$(sliderContainer).append('<div id="slider_range" style="float:left; width:88%;"></div><div id="slider_date" style="float: right; width: 120px; padding-left:1%;"><input type="number" id="slider_date_annee" min="-3000" max="2022" value="0" style="font-family: Georgia; color: black; font-size:30px; padding-top: 5px; padding-bottom: 7px; padding-left: 11px; padding-right: 7px;"></input></div>');
+		$(sliderContainer).append('<div id="slider_range" style="float:left; width:88%;"></div><div id="slider_date" style="float: right; width: 120px; padding-left:1%;"><input type="number" id="slider_date_annee" min="-3000" max="2022" value="2020" style="font-family: Georgia; color: black; font-size:30px; padding-top: 5px; padding-bottom: 7px; padding-left: 11px; padding-right: 7px;"></input></div>');
 		
 		L.DomEvent.disableClickPropagation(sliderContainer);
 		L.DomEvent.disableScrollPropagation(sliderContainer);
@@ -364,17 +364,19 @@ $( "#slider_play" ).change(function(e) {
 $.post('dialogue_BDD_site/recuperation_formes.php', function(result) {
 	
 		result = result.split(";;;");
-        console.log(result);
+        // console.log(result);
 		
 		figures = JSON.parse(result[0]);
 
-		caracs = JSON.parse(result[1].replace(/\n/g, "</br>"));
+		caracs_villes = JSON.parse(result[1].replace(/\n/g, "</br>"));
+		console.log("caracs_villes");
+		console.log(caracs_villes);
 		
-		Object.keys(caracs).forEach(function (key) {
+		Object.keys(caracs_villes).forEach(function (key) {
 			
-			for (it in caracs[key])
+			for (it in caracs_villes[key])
 			{
-				caracs[key][it] = JSON.parse(caracs[key][it]);
+				caracs_villes[key][it] = JSON.parse(caracs_villes[key][it]);
 			}
 		});
 		
@@ -413,19 +415,19 @@ function valider()
 
 function determination_caracs_a_cette_date()
 {
-	Object.keys(caracs).forEach(function (key) {
+	Object.keys(caracs_villes).forEach(function (key) {
 		
-		// on sauvegarde les caracs qu'on avait trouvé pour l'année précédente
-		var copie_caracs_a_cette_date = JSON.parse(JSON.stringify(caracs_a_cette_date));
+		// on sauvegarde les caracs_villes qu'on avait trouvé pour l'année précédente
+		var copie_caracs_villes_a_cette_date = JSON.parse(JSON.stringify(caracs_villes_a_cette_date));
 		
 		// et on réinitialise le tableau pour la nouvelle année
-		caracs_a_cette_date[key] = {};
+		caracs_villes_a_cette_date[key] = {};
 		
-		// on applique la procédure pour tous les éléments qui ont des caracs pour ce champ-là
-		for (iden in caracs[key])
+		// on applique la procédure pour tous les éléments qui ont des caracs_villes pour ce champ-là
+		for (iden in caracs_villes[key])
 		{
 			// mais on limite les calculs aux caractéristiques qu'on va figurer ou écrire
-			if (key == "capitale" || key == "nomade" ||key == "population" || key == "nom" || iden == id_actif)
+			if (key == "capitale" || key == "nomade" || key == "population" || key == "population_etat" || key == "nom" || iden == id_actif)
 			{
 				actualisation_carac = "";
 				
@@ -433,10 +435,10 @@ function determination_caracs_a_cette_date()
 				var id_so_far = "undefined";
 				
 				// pour limiter les calculs, on vérifie si les caractéristiques de la copie sauvegardée sont toujours adaptés
-				if (typeof copie_caracs_a_cette_date[key] != "undefined" && typeof copie_caracs_a_cette_date[key][iden] != "undefined")
+				if (typeof copie_caracs_villes_a_cette_date[key] != "undefined" && typeof copie_caracs_villes_a_cette_date[key][iden] != "undefined")
 				{
 					// on recupère l'id de la carac précédente...
-					essai_id = copie_caracs_a_cette_date[key][iden][1];
+					essai_id = copie_caracs_villes_a_cette_date[key][iden][1];
 					
 					// si ce champ pour cet id avait une carac bien sûr
 					if (essai_id != "undefined")
@@ -445,7 +447,7 @@ function determination_caracs_a_cette_date()
 						// c'est que le bon id de carac s'il y en a un est plus loin
 						if (key != "population" || key != "population_etat")
 						{
-							if (caracs[key][iden][essai_id][0] <= annee && annee <= caracs[key][iden][essai_id][1])
+							if (caracs_villes[key][iden][essai_id][0] <= annee && annee <= caracs_villes[key][iden][essai_id][1])
 							{
 								id_so_far = essai_id;
 							}
@@ -455,7 +457,7 @@ function determination_caracs_a_cette_date()
 						// 
 						else
 						{
-							if ((caracs[key][iden][essai_id][0] <= annee && (essai_id+1) == caracs[key][iden].length) || (caracs[key][iden][essai_id][0] <= annee && caracs[key][iden][essai_id+1][0] > annee))
+							if ((caracs_villes[key][iden][essai_id][0] <= annee && (essai_id+1) == caracs_villes[key][iden].length) || (caracs_villes[key][iden][essai_id][0] <= annee && caracs_villes[key][iden][essai_id+1][0] > annee))
 							{
 								id_so_far = essai_id;
 							}
@@ -466,14 +468,14 @@ function determination_caracs_a_cette_date()
 				// si à ce stade on a toujours aucune piste pour situer la bonne carac dans le tableau
 				if (id_so_far == "undefined")
 				{
-					// on teste toutes les caracs valides pour ce champ et cet id
-					for (it in caracs[key][iden])
+					// on teste toutes les caracs_villes valides pour ce champ et cet id
+					for (it in caracs_villes[key][iden])
 					{
 						// si une carac commence avant la nouvelle année et que ce début est au-delà du maximum checké jusqu'à présent
 						// alors cette carac a de bonnes chances d'être celles que l'on cherche, on peut la sauvegarder comme meilleure candidate
-						if (caracs[key][iden][it][0] <= annee && caracs[key][iden][it][0] >= max_so_far)
+						if (caracs_villes[key][iden][it][0] <= annee && caracs_villes[key][iden][it][0] >= max_so_far)
 						{
-							max_so_far = caracs[key][iden][it][0];
+							max_so_far = caracs_villes[key][iden][it][0];
 							id_so_far = it;
 						}
 					}
@@ -489,25 +491,25 @@ function determination_caracs_a_cette_date()
 					if (key == "population" || key == "population_etat") {
 						// si le candidat n'est pas le dernier du tableau...
 						
-						if (caracs[key][iden][id_so_far][2] == -1)
+						if (caracs_villes[key][iden][id_so_far][2] == -1)
 						{
-							if (caracs[key][iden][id_so_far][1] >= annee)
+							if (caracs_villes[key][iden][id_so_far][1] >= annee)
 							{
 								actualisation_carac = "inconnu";
 							}
 						}
-						else if ((id_so_far+1) < caracs[key][iden].length)
+						else if ((id_so_far+1) < caracs_villes[key][iden].length)
 						{
 							// on peut extraire la prochaine population et son année de début pour le figuré
-							prochaine_pop = caracs[key][iden][id_so_far+1][2];
-							derniere_pop = caracs[key][iden][id_so_far][2];
-							prochaine_pop_debut = caracs[key][iden][id_so_far+1][0];
-							derniere_pop_fin = caracs[key][iden][id_so_far][0];
+							prochaine_pop = caracs_villes[key][iden][id_so_far+1][2];
+							derniere_pop = caracs_villes[key][iden][id_so_far][2];
+							prochaine_pop_debut = caracs_villes[key][iden][id_so_far+1][0];
+							derniere_pop_fin = caracs_villes[key][iden][id_so_far][0];
 							
-							if (caracs[key][iden][id_so_far+1][2] == -1)
+							if (caracs_villes[key][iden][id_so_far+1][2] == -1)
 							{
 								// afin de faire le figuré de la population pour l'année qui nous occupe
-								actualisation_carac = caracs[key][iden][id_so_far][2];
+								actualisation_carac = caracs_villes[key][iden][id_so_far][2];
 							} else {
 								// afin de faire le figuré de la population pour l'année qui nous occupe
 								actualisation_carac = Math.round((prochaine_pop - derniere_pop) / (prochaine_pop_debut - derniere_pop_fin) * (annee - derniere_pop_fin) + derniere_pop);
@@ -518,18 +520,18 @@ function determination_caracs_a_cette_date()
 						else
 						{
 							// sinon on prend juste la population sans l'ajuster
-							actualisation_carac = caracs[key][iden][id_so_far][2];
+							actualisation_carac = caracs_villes[key][iden][id_so_far][2];
 						}
 					}
 					
 					// et si on n'a pas affaire à une population et que la carac est valide au moins jusqu'à la nouvelle année
 					// on la valide comme nouvelle carac
-					else if (caracs[key][iden][id_so_far][1] >= annee) {
-						actualisation_carac = caracs[key][iden][id_so_far][2];
+					else if (caracs_villes[key][iden][id_so_far][1] >= annee) {
+						actualisation_carac = caracs_villes[key][iden][id_so_far][2];
 					}
 				}
 				
-				caracs_a_cette_date[key][iden] = [actualisation_carac, id_so_far];
+				caracs_villes_a_cette_date[key][iden] = [actualisation_carac, id_so_far];
 			}
 		}
 	});
@@ -542,17 +544,20 @@ function affichage_figures()
 	var populations_villes_triees = [];
 	var map_bounds = map.getBounds();
 	
-	for (var iden in caracs["latLng"]) 
+	for (var iden in caracs_villes["latLng"]) 
 	{
-		for (var instance_ville in caracs["latLng"][iden])
+		for (var instance_ville in caracs_villes["latLng"][iden])
 		{
-			if (caracs["latLng"][iden][instance_ville][0] <= annee && annee <= caracs["latLng"][iden][instance_ville][1] && L.latLngBounds(map_bounds).contains([caracs["latLng"][iden][instance_ville][2][1], caracs["latLng"][iden][instance_ville][2][0]]))
+			// Si l'année est comprise dans la période de validité de la carac et que la ville est dans la région affichée
+			if (caracs_villes["latLng"][iden][instance_ville][0] <= annee && annee <= caracs_villes["latLng"][iden][instance_ville][1] && L.latLngBounds(map_bounds).contains([caracs_villes["latLng"][iden][instance_ville][2][1], caracs_villes["latLng"][iden][instance_ville][2][0]]))
 			{
-				var population_id;
-				if (iden in caracs_a_cette_date["population"])
+				var population_id = [0,0];
+				if (iden in caracs_villes_a_cette_date["population"])
 				{
-					population_id = caracs_a_cette_date["population"][iden];
+					population_id = caracs_villes_a_cette_date["population"][iden];
 				}
+				// console.log("population_id");
+				// console.log(population_id);
 				
 				if (typeof(population_id) != "undefined" && population_id[0] != "" && population_id[0] != "inconnu")
 				{
@@ -579,6 +584,7 @@ function affichage_figures()
 		
 		iden_populations_villes_triees.push(id_pop);
 	}
+	// console.log(populations_villes_triees);
 
 	// détermination du max à cette année
 	var max_pop_local_ville;
@@ -587,13 +593,94 @@ function affichage_figures()
 	{
 		max_pop_local_ville = populations_villes_triees[0][1];
 	}
+
+	// pour ne garder que les pays aux populations les plus grandes de la région concernée
+	var populations_pays_triees = [];
+	// console.log(figures);
+	console.log("caracs_villes_a_cette_date");
+	console.log(caracs_villes_a_cette_date);
+	// console.log(caracs_villes_a_cette_date["population_etat"]);
+	for (var idMultipolygon in figures.features) 
+	{
+		// Si l'année n'est pas comprise dans la période de validité de la carac, on passe au multipolygon suivant
+		if(figures.features[idMultipolygon].properties.annee_debut > annee || annee > figures.features[idMultipolygon].properties.annee_fin)
+		{
+			continue;
+		}
+		// Si le multipolygon est une ville, on passe au multipolygon suivant
+		if (figures.features[idMultipolygon].properties.type_element == "ville")
+		{
+			continue;
+		}
+		for (var polygon in figures.features[idMultipolygon].geometry.coordinates)
+		{
+			// Si le multipolygon n'a pas de coordonnées, on passe au polygon suivant
+			if ((figures.features[idMultipolygon].geometry.coordinates[polygon][0]) == "undefined")
+			{
+				continue;
+			}
+			var centroid = get_polygon_centroid(figures.features[idMultipolygon].geometry.coordinates[polygon][0]);
+			if (!L.latLngBounds(map_bounds).contains(centroid.reverse()))
+			{
+				continue;
+			}
+			var idPays = figures.features[idMultipolygon].properties.id_element;
+			var population_id = [0,0];
+			if (idPays in caracs_villes_a_cette_date["population_etat"])
+			{
+				population_id = caracs_villes_a_cette_date["population_etat"][idPays];
+			}
+			if(idPays == 508){
+				console.log("population_id");
+				console.log(population_id);
+				console.log("polygon");
+				console.log(figures.features[iden]);
+				console.log("centroid");
+				console.log(centroid);
+			}
+			
+			if (typeof(population_id) != "undefined" && population_id[0] != "" && population_id[0] != "inconnu")
+			{
+				populations_pays_triees.push([idPays, centroid, population_id[0]]);
+			}
+			
+			else
+			{
+				populations_pays_triees.push([idPays, centroid, 0]);
+			}
+		}
+	}
+
+	populations_pays_triees.sort(function(a, b) {
+		return b[1] - a[1];
+	});
+	console.log("populations_pays_triees");
+	console.log(populations_pays_triees);
+
+	var iden_populations_pays_triees = [];
+	for (var id in populations_pays_triees)
+	{
+		id_pop = parseInt(populations_pays_triees[id][0]);
+		valeur = populations_pays_triees[id][1];
+		
+		iden_populations_pays_triees.push(id_pop);
+	}
+
+	// détermination du max à cette année
+	var max_pop_local_pays;
+	
+	if (populations_pays_triees.length != 0)
+	{
+		max_pop_local_pays = populations_pays_triees[0][1];
+	}
+	
 	
 	
 	geoJSONlayer_pays = new L.geoJSON(figures, {
 		smoothFactor: 0,
 		style: 
 			function(feature) {
-				var nomade_id = caracs_a_cette_date["nomade"][feature.properties.id_element];
+				var nomade_id = caracs_villes_a_cette_date["nomade"][feature.properties.id_element];
 				
 				if (typeof(nomade_id) == "undefined" || nomade_id[0] == false) {
 					if (id_actif == feature.properties.id_element) {
@@ -648,9 +735,9 @@ function affichage_figures()
 			});
 			
 			var nom_id;
-			if (caracs_a_cette_date["nom"][feature.properties.id_element] != undefined)
+			if (caracs_villes_a_cette_date["nom"][feature.properties.id_element] != undefined)
 			{
-				nom_id = caracs_a_cette_date["nom"][feature.properties.id_element][0];
+				nom_id = caracs_villes_a_cette_date["nom"][feature.properties.id_element][0];
 			}
 			if (nom_id != undefined && nom_id != "") {
 				layer.bindTooltip(nom_id);
@@ -700,12 +787,12 @@ function affichage_figures()
 			},
 		pointToLayer: function(feature, latLng) {
 			
-			var population_id = caracs_a_cette_date["population"][feature.properties.id_element];
-			var capitale_id = caracs_a_cette_date["capitale"][feature.properties.id_element];
+			var population_id = caracs_villes_a_cette_date["population"][feature.properties.id_element];
+			var capitale_id = caracs_villes_a_cette_date["capitale"][feature.properties.id_element];
 			var nom_id;
-			if (caracs_a_cette_date["nom"][feature.properties.id_element] != undefined)
+			if (caracs_villes_a_cette_date["nom"][feature.properties.id_element] != undefined)
 			{
-				nom_id = caracs_a_cette_date["nom"][feature.properties.id_element][0];
+				nom_id = caracs_villes_a_cette_date["nom"][feature.properties.id_element][0];
 			}
 			
 			var geojsonMarkerOptions = {};
@@ -802,34 +889,55 @@ function affichage_figures()
 	geoJSONlayer_villes.addTo(map);
 }
 
+function get_polygon_centroid(pts) {
+	var first = pts[0], last = pts[pts.length-1];
+	if (first[0] != last[0] || first[1] != last[1]) pts.push(first);
+	var twicearea=0,
+	x=0, y=0,
+	nPts = pts.length,
+	p1, p2, f;
+	for ( var i=0, j=nPts-1 ; i<nPts ; j=i++ ) {
+		p1 = pts[i]; p2 = pts[j];
+		f = p1[0]*p2[1] - p2[0]*p1[1];
+		twicearea += f;
+		x += ( p1[0] + p2[0] ) * f;
+		y += ( p1[1] + p2[1] ) * f;
+	}
+	f = twicearea * 3;
+	if(f == 0) {
+		return first;
+	}
+	return [x/f, y/f];
+}
+
 function actualisation_conteneur_droite()
 {
 	nom = "";
-	if (typeof(caracs_a_cette_date["nom"][id_actif]) != "undefined")
+	if (typeof(caracs_villes_a_cette_date["nom"][id_actif]) != "undefined")
 	{
-		nom = caracs_a_cette_date["nom"][id_actif][0];
+		nom = caracs_villes_a_cette_date["nom"][id_actif][0];
 	}
 	
 	wikipedia = "";
-	if (typeof(caracs_a_cette_date["wikipedia"][id_actif]) != "undefined")
+	if (typeof(caracs_villes_a_cette_date["wikipedia"][id_actif]) != "undefined")
 	{
-		wikipedia = caracs_a_cette_date["wikipedia"][id_actif][0];
+		wikipedia = caracs_villes_a_cette_date["wikipedia"][id_actif][0];
 	}
 	
 	population = "";
-	if (typeof(caracs_a_cette_date["population"][id_actif]) != "undefined")
+	if (typeof(caracs_villes_a_cette_date["population"][id_actif]) != "undefined")
 	{
-		population = caracs_a_cette_date["population"][id_actif][0];
+		population = caracs_villes_a_cette_date["population"][id_actif][0];
 	}
-	else if (typeof(caracs_a_cette_date["population_etat"][id_actif]) != "undefined")
+	else if (typeof(caracs_villes_a_cette_date["population_etat"][id_actif]) != "undefined")
 	{
-		population = caracs_a_cette_date["population_etat"][id_actif][0];
+		population = caracs_villes_a_cette_date["population_etat"][id_actif][0];
 	}
 	
 	source = "";
-	if (typeof(caracs_a_cette_date["source"][id_actif]) != "undefined")
+	if (typeof(caracs_villes_a_cette_date["source"][id_actif]) != "undefined")
 	{
-		source = caracs_a_cette_date["source"][id_actif][0];
+		source = caracs_villes_a_cette_date["source"][id_actif][0];
 	}
 	
 	chaine = "";
