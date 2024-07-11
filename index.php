@@ -890,14 +890,18 @@ function affichage_figures()
 }
 
 function get_polygon_centroid(pts) {
-	var first = pts[0], last = pts[pts.length-1];
-	if (first[0] != last[0] || first[1] != last[1]) pts.push(first);
+	// make a copy of ths pts array that doesn't modify pts when modified
+	var ptsCopy = pts.slice();
+	var first = ptsCopy[0], last = ptsCopy[ptsCopy.length-1];
+	if (first[0] != last[0] || first[1] != last[1]) {
+		ptsCopy.push(first);
+	}
 	var twicearea=0,
 	x=0, y=0,
-	nPts = pts.length,
+	nPts = ptsCopy.length,
 	p1, p2, f;
 	for ( var i=0, j=nPts-1 ; i<nPts ; j=i++ ) {
-		p1 = pts[i]; p2 = pts[j];
+		p1 = ptsCopy[i]; p2 = ptsCopy[j];
 		f = p1[0]*p2[1] - p2[0]*p1[1];
 		twicearea += f;
 		x += ( p1[0] + p2[0] ) * f;
@@ -905,7 +909,7 @@ function get_polygon_centroid(pts) {
 	}
 	f = twicearea * 3;
 	if(f == 0) {
-		return first;
+		return [first[0],first[1]];
 	}
 	return [x/f, y/f];
 }
