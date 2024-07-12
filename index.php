@@ -81,7 +81,7 @@
 						<input type="range" min="1" max="100" value="50" class="slider_play" id="slider_play">
 					</div>
 					<button type="button" id="bouton_player" value="play" onclick="play_geojson()">Play</button>
-					<label><input type="checkbox" id="my-toggle"> toggle me</label>
+					<label><input type="checkbox" id="my-toggle" onclick="reset_figures()">Afficher populations pays</label>
 				
 				</div>
 				
@@ -390,14 +390,17 @@ $.post('dialogue_BDD_site/recuperation_formes.php', function(result) {
 	});
 	
 map.on('moveend', function() { 
+	reset_figures();
+});
+	
+function reset_figures()
+{
 	map.removeLayer(geoJSONlayer_pays);
 	map.removeLayer(geoJSONlayer_villes);
 	map.removeLayer(geoJSONlayer_population_pays);
-    
-	affichage_figures();
-});
 	
-
+	affichage_figures();
+}
 
 // fonctions
 
@@ -1023,14 +1026,6 @@ function affichage_populations_pays(populations_pays_triees, max_pop_local_pays)
 					else {
 						return { color: "black", fillColor: feature.properties.couleur, weight: 1 };
 					}
-				
-				// if (typeof(population_id) == "undefined" || population_id[0] == "" || population_id[0] == "inconnu") {
-				// 	styles.fillOpacity = 0;
-				// 	return { fillOpacity: 0 };
-				// }
-				// else {
-				// 	return { fillOpacity: Math.max(0.1, 0.1 + 0.9*population_id[0]/max_pop_local_pays) };
-				// }
 			},
 		onEachFeature: function(feature, layer) {
 			layer.addEventListener('click', function(e) {
@@ -1101,6 +1096,11 @@ function affichage_populations_pays(populations_pays_triees, max_pop_local_pays)
 		},
 		filter:
 			function(feature) {
+				var population_id = caracs_a_cette_date["population_etat"][feature.properties.id_element];
+				if (typeof(population_id) == "undefined" || population_id[0] == "" || population_id[0] == "inconnu" || population_id[0] == 0)
+				{
+					return false;
+				}
 				if (!((feature.properties.annee_debut <= annee) && (annee <= feature.properties.annee_fin)))
 				{
 					return false;
@@ -1117,19 +1117,6 @@ function affichage_populations_pays(populations_pays_triees, max_pop_local_pays)
 					return true;
 				}
 				return false;
-				// for (var id in feature.properties.has_capitale)
-				// {
-				// 	if (feature.properties.has_capitale[id][0] <= annee && annee <= feature.properties.has_capitale[id][1])
-				// 	{
-				// 		// id = iden_populations_pays_triees.indexOf(feature.properties.id_element);
-				// 		// if (id != -1 && id < max_pays_simultanes)
-				// 		// {
-				// 		// 	return true;
-				// 		// }
-				// 		return true;
-				// 	}
-				// }
-				// return false;
 			},
 		weight: 1,
 		fillOpacity: 1
