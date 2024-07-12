@@ -81,6 +81,7 @@
 						<input type="range" min="1" max="100" value="50" class="slider_play" id="slider_play">
 					</div>
 					<button type="button" id="bouton_player" value="play" onclick="play_geojson()">Play</button>
+					<label><input type="checkbox" id="my-toggle"> toggle me</label>
 				
 				</div>
 				
@@ -373,11 +374,8 @@ $.post('dialogue_BDD_site/recuperation_formes.php', function(result) {
 		figures = JSON.parse(result[0]);
 
 		caracs = JSON.parse(result[1].replace(/\n/g, "</br>"));
-		console.log("caracs");
-		console.log(caracs);
 		
 		Object.keys(caracs).forEach(function (key) {
-			
 			for (it in caracs[key])
 			{
 				caracs[key][it] = JSON.parse(caracs[key][it]);
@@ -656,8 +654,7 @@ function affichage_figures()
 
 	// détermination du max à cette année
 	var max_pop_local_ville;
-	if (populations_villes_triees.length != 0)
-	{
+	if (populations_villes_triees.length != 0){
 		max_pop_local_ville = populations_villes_triees[0][1];
 	}
 
@@ -667,16 +664,30 @@ function affichage_figures()
 
 	// détermination du max à cette année
 	var max_pop_local_pays;
-	if (populations_pays_triees.length != 0)
-	{
+	if (populations_pays_triees.length != 0){
 		max_pop_local_pays = populations_pays_triees[0][1];
 	}
-	
-	affichage_pays();
-	
-	affichage_villes(iden_populations_villes_triees, max_pop_local_ville);
 
-	affichage_populations_pays(populations_pays_triees, max_pop_local_pays);
+	affichage_pays();
+
+	// Access the checkbox element
+	var checkbox = document.getElementById('my-toggle');
+
+	// Check if the checkbox is checked
+	var is_checked = checkbox.checked;
+
+	// Log the checked status
+	console.log(is_checked);
+	if (is_checked){
+		affichage_populations_pays(populations_pays_triees, max_pop_local_pays);
+		geoJSONlayer_villes = new L.geoJSON();
+		map.addLayer(geoJSONlayer_villes);
+	}
+	else{
+		affichage_villes(iden_populations_villes_triees, max_pop_local_ville);
+		geoJSONlayer_population_pays = new L.geoJSON();
+		map.addLayer(geoJSONlayer_population_pays);
+	}
 }
 
 function tri_populations_villes(populations_villes_triees, iden_populations_villes_triees, map_bounds){
@@ -817,7 +828,8 @@ function affichage_pays(){
 		onEachFeature: function(feature, layer) {
 			
 			layer.addEventListener('click', function(e) {
-				if (id_actif == feature.properties.id_element) {
+				if 
+				(id_actif == feature.properties.id_element) {
 					id_actif = "";
 				}
 				else {
@@ -1006,10 +1018,10 @@ function affichage_populations_pays(populations_pays_triees, max_pop_local_pays)
 				var population_id = caracs_a_cette_date["population_etat"][feature.properties.id_element];
 				var styles;
 				if (id_actif == feature.properties.id_element) {
-						return { color: '#eb2ca8', weight: 2 };
+						return { color: "black", fillColor: '#eb2ca8', weight: 1 };
 					}
 					else {
-						return { color: feature.properties.couleur, weight: 2 };
+						return { color: "black", fillColor: feature.properties.couleur, weight: 1 };
 					}
 				
 				// if (typeof(population_id) == "undefined" || population_id[0] == "" || population_id[0] == "inconnu") {
