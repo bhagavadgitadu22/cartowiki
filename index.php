@@ -81,7 +81,7 @@
 						<input type="range" min="1" max="100" value="50" class="slider_play" id="slider_play">
 					</div>
 					<button type="button" id="bouton_player" value="play" onclick="play_geojson()">Play</button>
-					<label><input type="checkbox" id="my-toggle" onclick="reset_figures()">Afficher populations pays</label>
+					<label><input type="checkbox" id="afficher_population_pays_toggle" onclick="reset_figures()">Afficher populations pays</label>
 				
 				</div>
 				
@@ -473,8 +473,6 @@ function determination_liste_centroid()
 			// 		if (isMarkerInsidePolygon(caracs["latLng"][instance_capitale],figures.features[id_multipolygon].geometry.coordinates[polygon]))
 			// 		{
 			// 			has_capitale.push([max_annee_debut, min_annee_fin]);
-			// 			console.log("capitale");
-			// 			console.log(has_capitale);
 			// 			break;
 			// 		}
 			// 	}
@@ -499,8 +497,6 @@ function determination_liste_centroid()
 			centroids.push(geojsonFeature);
 		}
 	}
-	console.log("centroids");
-	console.log(centroids);
 }
 
 function isMarkerInsidePolygon(marker, poly) {
@@ -649,44 +645,40 @@ function determination_caracs_a_cette_date()
 function affichage_figures()
 {
 	var map_bounds = map.getBounds();
-	
-	// pour ne garder que les villes les plus grandes de la région concernée
-	var populations_villes_triees = [];
-	var iden_populations_villes_triees = [];
-	tri_populations_villes(populations_villes_triees, iden_populations_villes_triees, map_bounds);
-
-	// détermination du max à cette année
-	var max_pop_local_ville;
-	if (populations_villes_triees.length != 0){
-		max_pop_local_ville = populations_villes_triees[0][1];
-	}
-
-	// pour ne garder que les pays aux populations les plus grandes de la région concernée
-	var populations_pays_triees = [];
-	tri_populations_pays(populations_pays_triees, map_bounds);
-
-	// détermination du max à cette année
-	var max_pop_local_pays;
-	if (populations_pays_triees.length != 0){
-		max_pop_local_pays = populations_pays_triees[0][1];
-	}
 
 	affichage_pays();
 
 	// Access the checkbox element
-	var checkbox = document.getElementById('my-toggle');
+	var checkbox = document.getElementById('afficher_population_pays_toggle');
 
 	// Check if the checkbox is checked
 	var is_checked = checkbox.checked;
 
-	// Log the checked status
-	console.log(is_checked);
 	if (is_checked){
+		// pour ne garder que les pays aux populations les plus grandes de la région concernée
+		var populations_pays_triees = [];
+		tri_populations_pays(populations_pays_triees, map_bounds);
+
+		// détermination du max à cette année
+		var max_pop_local_pays;
+		if (populations_pays_triees.length != 0){
+			max_pop_local_pays = populations_pays_triees[0][1];
+		}
 		affichage_populations_pays(populations_pays_triees, max_pop_local_pays);
 		geoJSONlayer_villes = new L.geoJSON();
 		map.addLayer(geoJSONlayer_villes);
 	}
 	else{
+		// pour ne garder que les villes les plus grandes de la région concernée
+		var populations_villes_triees = [];
+		var iden_populations_villes_triees = [];
+		tri_populations_villes(populations_villes_triees, iden_populations_villes_triees, map_bounds);
+
+		// détermination du max à cette année
+		var max_pop_local_ville;
+		if (populations_villes_triees.length != 0){
+			max_pop_local_ville = populations_villes_triees[0][1];
+		}
 		affichage_villes(iden_populations_villes_triees, max_pop_local_ville);
 		geoJSONlayer_population_pays = new L.geoJSON();
 		map.addLayer(geoJSONlayer_population_pays);
@@ -763,14 +755,6 @@ function tri_populations_pays(populations_pays_triees, map_bounds){
 			if (id_pays in caracs_a_cette_date["population_etat"])
 			{
 				population_id = caracs_a_cette_date["population_etat"][id_pays];
-			}
-			if(id_pays == 789){
-				console.log("population_id");
-				console.log(population_id);
-				console.log("polygon");
-				console.log(figures.features[iden]);
-				console.log("centroid");
-				console.log(centroid);
 			}
 			if(typeof(populations_pays_triees.find(x => x[0] == id_pays)) == "undefined"){
 				if (typeof(population_id) != "undefined" && population_id[0] != "" && population_id[0] != "inconnu")
@@ -1110,10 +1094,6 @@ function affichage_populations_pays(populations_pays_triees, max_pop_local_pays)
 				}
 				if (populations_pays_triees.find(x => x[0] == feature.properties.id_element)[2] <= feature.properties.taille_polygone)
 				{
-					if (feature.properties.id_element == 789){
-						console.log("feature");
-						console.log(feature);
-					}	
 					return true;
 				}
 				return false;
