@@ -797,7 +797,6 @@ function affichage_pays(){
 						return { color: feature.properties.couleur };
 					}
 				}
-				
 				else {
 					if (id_actif == feature.properties.id_element) {
 						return { fillPattern: new L.StripePattern({
@@ -857,7 +856,7 @@ function affichage_pays(){
 				return (feature.properties.annee_debut <= annee) && (annee <= feature.properties.annee_fin) && (feature.properties.type_element == "pays");
 			},
 		weight: 1,
-		fillOpacity: 0.6
+		fillOpacity: 0.5
 	});
 	geoJSONlayer_pays.addTo(map);
 }
@@ -1121,7 +1120,7 @@ function affichage_populations_pays(populations_pays_triees, max_pop_local_pays)
 				// return false;
 			},
 		weight: 1,
-		fillOpacity: 0.6
+		fillOpacity: 1
 	});
 	geoJSONlayer_population_pays.addTo(map);
 }
