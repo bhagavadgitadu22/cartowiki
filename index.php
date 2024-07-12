@@ -179,8 +179,10 @@ L.Map.include({
 // définition variables
 
 var figures;
+var centroids = [];
 var geoJSONlayer_pays;
 var geoJSONlayer_villes;
+var geoJSONlayer_population_pays;
 
 var id_actif = "";
 var type_actif;
@@ -330,6 +332,7 @@ $( "#slider_range" ).slider({
 		
 		map.removeLayer(geoJSONlayer_pays);
 		map.removeLayer(geoJSONlayer_villes);
+		map.removeLayer(geoJSONlayer_population_pays);
 		
 		annee = parseInt($( "#slider_date_annee" ).val());
 		determination_caracs_a_cette_date();
@@ -344,6 +347,7 @@ $( "#slider_date_annee" ).bind('change', function(){
 	
 	map.removeLayer(geoJSONlayer_pays);
 	map.removeLayer(geoJSONlayer_villes);
+	map.removeLayer(geoJSONlayer_population_pays);
 	
 	annee = parseInt($( "#slider_date_annee" ).val());
 	determination_caracs_a_cette_date();
@@ -380,6 +384,8 @@ $.post('dialogue_BDD_site/recuperation_formes.php', function(result) {
 			}
 		});
 		
+		determination_liste_centroid();
+
 		annee = parseInt($( "#slider_date_annee" ).val());
 		determination_caracs_a_cette_date();
 		affichage_figures();
@@ -388,6 +394,7 @@ $.post('dialogue_BDD_site/recuperation_formes.php', function(result) {
 map.on('moveend', function() { 
 	map.removeLayer(geoJSONlayer_pays);
 	map.removeLayer(geoJSONlayer_villes);
+	map.removeLayer(geoJSONlayer_population_pays);
     
 	affichage_figures();
 });
@@ -412,6 +419,103 @@ function valider()
 		}
 	}
 }
+
+/// Détermine la liste des centroides de chaque pays avec leurs dates et populations correspondantes
+function determination_liste_centroid()
+{
+	for (var idMultipolygon in figures.features) 
+	{
+		// Si le multipolygon est une ville, on passe au multipolygon suivant
+		if (figures.features[idMultipolygon].properties.type_element == "ville")
+		{
+			continue;
+		}
+		for (var polygon in figures.features[idMultipolygon].geometry.coordinates)
+		{
+			// Si le multipolygon n'a pas de coordonnées, on passe au polygon suivant
+			if ((figures.features[idMultipolygon].geometry.coordinates[polygon][0]) == "undefined")
+			{
+				continue;
+			}
+			var id_pays = figures.features[idMultipolygon].properties.id_element;
+			var centroid = get_polygon_centroid(figures.features[idMultipolygon].geometry.coordinates[polygon][0]);
+			var has_capitale = [];
+			// var annee_debut_polygone = figures.features[idMultipolygon].properties.annee_debut;
+			// var annee_fin_polygone = figures.features[idMultipolygon].properties.annee_fin;
+			// for (var instance_capitale in caracs["capitale"])
+			// {
+			// 	var annee_debut_capitale = caracs["capitale"][instance_capitale][0];
+			// 	var annee_fin_capitale = caracs["capitale"][instance_capitale][1];
+			// 	// Si la ville correspond aux dates du polygone et que c'est une capitale
+			// 	if (!caracs["capitale"][instance_capitale][2] && !( annee_debut_polygone <= annee_debut_capitale <= annee_fin_polygone || annee_debut_polygone <= annee_fin_capitale <= annee_fin_polygone || annee_debut_capitale <= annee_debut_polygone <= annee_fin_capitale || annee_debut_capitale <= annee_fin_polygone <= annee_fin_capitale))
+			// 	{
+			// 		continue;
+			// 	}
+			// 	// Si la capitale se trouve dans le polygone aux bonnes dates
+			// 	for (var position_id in caracs["latLng"][instance_capitale]){
+			// 		var annee_debut_position_capitale = caracs["latLng"][instance_capitale][position_id][0];
+			// 		var annee_fin_position_capitale = caracs["latLng"][instance_capitale][position_id][1];
+			// 		if (!( annee_debut_polygone <= annee_debut_position_capitale <= annee_fin_polygone || annee_debut_polygone <= annee_fin_position_capitale <= annee_fin_polygone || annee_debut_position_capitale <= annee_debut_polygone <= annee_fin_position_capitale || annee_debut_position_capitale <= annee_fin_polygone <= annee_fin_position_capitale))
+			// 		{
+			// 			continue;
+			// 		}
+			// 		if (!( annee_debut_capitale <= annee_debut_position_capitale <= annee_fin_capitale || annee_debut_capitale <= annee_fin_position_capitale <= annee_fin_capitale|| annee_debut_position_capitale <= annee_debut_capitale <= annee_fin_position_capitale || annee_debut_position_capitale <= annee_fin_capitale <= annee_fin_position_capitale))
+			// 		{
+			// 			continue;
+			// 		}
+			// 		min_annee_fin = Math.min(annee_fin_polygone, annee_fin_capitale, annee_fin_position_capitale);
+			// 		max_annee_debut = Math.max(annee_debut_polygone, annee_debut_capitale, annee_debut_position_capitale);
+			// 		if (min_annee_fin < max_annee_debut)
+			// 		{
+			// 			continue;
+			// 		}
+			// 		if (isMarkerInsidePolygon(caracs["latLng"][instance_capitale],figures.features[idMultipolygon].geometry.coordinates[polygon]))
+			// 		{
+			// 			has_capitale.push([max_annee_debut, min_annee_fin]);
+			// 			console.log("capitale");
+			// 			console.log(has_capitale);
+			// 			break;
+			// 		}
+			// 	}
+			// }
+			var geojsonFeature = {
+				"type": "Feature",
+				"properties": {
+					"id_element": id_pays,
+					"annee_debut": figures.features[idMultipolygon].properties.annee_debut,
+					"annee_fin": figures.features[idMultipolygon].properties.annee_fin,
+					"couleur": figures.features[idMultipolygon].properties.couleur,
+					"has_capitale": has_capitale
+				},
+				"geometry": {
+					"type": "Point",
+					"coordinates": centroid
+				}
+			};
+			centroids.push(geojsonFeature);
+		}
+	}
+	console.log("centroids");
+	console.log(centroids);
+}
+
+function isMarkerInsidePolygon(marker, poly) {
+    var inside = false;
+    var x = marker[0], y = marker[1];
+    for (var ii=0;ii<poly.length;ii++){
+        var polyPoints = poly[ii];
+        for (var i = 0, j = polyPoints.length - 1; i < polyPoints.length; j = i++) {
+            var xi = polyPoints[i][0], yi = polyPoints[i][1];
+            var xj = polyPoints[j][0], yj = polyPoints[j][1];
+
+            var intersect = ((yi > y) != (yj > y))
+                && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+    }
+
+    return inside;
+};
 
 function determination_caracs_a_cette_date()
 {
@@ -596,8 +700,8 @@ function affichage_figures()
 	// pour ne garder que les pays aux populations les plus grandes de la région concernée
 	var populations_pays_triees = [];
 	// console.log(figures);
-	console.log("caracs_a_cette_date");
-	console.log(caracs_a_cette_date);
+	// console.log("caracs_a_cette_date");
+	// console.log(caracs_a_cette_date);
 	// console.log(caracs_a_cette_date["population_etat"]);
 	for (var idMultipolygon in figures.features) 
 	{
@@ -618,7 +722,7 @@ function affichage_figures()
 			{
 				continue;
 			}
-			var centroid = get_polygon_centroid(figures.features[idMultipolygon].geometry.coordinates[polygon][0]);
+			var centroid = centroids.find(x => x.properties.id_element == figures.features[idMultipolygon].properties.id_element).geometry.coordinates;
 			if (!L.latLngBounds(map_bounds).contains(centroid.reverse()))
 			{
 				continue;
@@ -640,12 +744,12 @@ function affichage_figures()
 			
 			if (typeof(population_id) != "undefined" && population_id[0] != "" && population_id[0] != "inconnu")
 			{
-				populations_pays_triees.push([id_pays, population_id[0], centroid]);
+				populations_pays_triees.push([id_pays, population_id[0]]);
 			}
 			
 			else
 			{
-				populations_pays_triees.push([id_pays, 0, centroid]);
+				populations_pays_triees.push([id_pays, 0]);
 			}
 		}
 	}
@@ -722,6 +826,7 @@ function affichage_figures()
 				
 				map.removeLayer(geoJSONlayer_pays);
 				map.removeLayer(geoJSONlayer_villes);
+				map.removeLayer(geoJSONlayer_population_pays);
 				
 				determination_caracs_a_cette_date();
 				affichage_figures();
@@ -772,6 +877,7 @@ function affichage_figures()
 				
 				map.removeLayer(geoJSONlayer_pays);
 				map.removeLayer(geoJSONlayer_villes);
+				map.removeLayer(geoJSONlayer_population_pays);
 				
 				determination_caracs_a_cette_date();
 				affichage_figures();
@@ -884,9 +990,132 @@ function affichage_figures()
 		weight: 1,
 		fillOpacity: 0.6
 	});
+
+	geoJSONlayer_population_pays = L.geoJSON(centroids, {
+		smoothFactor: 0,
+		style: 
+			function(feature) {
+				var population_id = caracs_a_cette_date["population_etat"][feature.properties.id_element];
+				var styles;
+				if (id_actif == feature.properties.id_element) {
+						return { color: '#eb2ca8', weight: 2 };
+					}
+					else {
+						return { color: feature.properties.couleur };
+					}
+				
+				// if (typeof(population_id) == "undefined" || population_id[0] == "" || population_id[0] == "inconnu") {
+				// 	styles.fillOpacity = 0;
+				// 	return { fillOpacity: 0 };
+				// }
+				// else {
+				// 	return { fillOpacity: Math.max(0.1, 0.1 + 0.9*population_id[0]/max_pop_local_pays) };
+				// }
+			},
+		onEachFeature: function(feature, layer) {
+			layer.addEventListener('click', function(e) {
+				if (id_actif == feature.properties.id_element) {
+					id_actif = "";
+				}
+				else {
+					id_actif = feature.properties.id_element;
+				}
+			
+				type_actif = "pays";
+				
+				map.removeLayer(geoJSONlayer_pays);
+				map.removeLayer(geoJSONlayer_villes);
+				map.removeLayer(geoJSONlayer_population_pays);
+				
+				determination_caracs_a_cette_date();
+				affichage_figures();
+				
+				if(id_actif == "") { 
+					$("#conteneur_droite_caracs").html("");
+				}
+				else {
+					actualisation_conteneur_droite();
+				}
+			});
+			
+			var nom_id;
+			console.log("caracs_a_cette_date");
+			console.log(caracs_a_cette_date);
+			if (caracs_a_cette_date["nom"][feature.properties.id_element] != undefined)
+			{
+				nom_id = caracs_a_cette_date["nom"][feature.properties.id_element][0];
+			}
+			if (nom_id != undefined && nom_id != "") {
+				layer.bindTooltip(nom_id);
+			}
+		},
+		pointToLayer: function(feature, latLng) {
+			var population_id = caracs_a_cette_date["population_etat"][feature.properties.id_element];
+			var geojsonMarkerOptions = {};
+			
+			if (typeof(population_id) == "undefined" || population_id[0] == "" || population_id[0] == "inconnu") {
+				geojsonMarkerOptions.radius = 0;
+				geojsonMarkerOptions.fillOpacity = 0;
+			}
+			else {
+				geojsonMarkerOptions.radius = Math.max(15*Math.sqrt(population_id[0]/max_pop_local_pays), 3);
+				geojsonMarkerOptions.weight = 1;
+				geojsonMarkerOptions.fillOpacity = 1;
+			}
+			
+			if (id_actif == feature.properties.id_element) {
+				geojsonMarkerOptions.fillColor = "#f416d7";
+			}
+			else {
+				geojsonMarkerOptions.fillColor = feature.properties.couleur;
+			}
+			console.log("geojsonMarkerOptions");
+			console.log(geojsonMarkerOptions);
+			var nom_id;
+			console.log("caracs_a_cette_date");
+			console.log(caracs_a_cette_date);
+			if (caracs_a_cette_date["nom"][feature.properties.id_element] != undefined)
+			{
+				nom_id = caracs_a_cette_date["nom"][feature.properties.id_element][0];
+			}
+			
+			console.log("nom_id");
+			console.log(nom_id);
+			if (nom_id == undefined || nom_id == "") {
+				return L.circleMarker(latLng, geojsonMarkerOptions);
+			}
+			else {
+				return L.circleMarker(latLng, geojsonMarkerOptions).bindTooltip(nom_id);
+			}
+		},
+		filter:
+			function(feature) {
+				if (!((feature.properties.annee_debut <= annee) && (annee <= feature.properties.annee_fin)))
+				{
+					return false;
+				}
+				return true;
+				// for (var id in feature.properties.has_capitale)
+				// {
+				// 	if (feature.properties.has_capitale[id][0] <= annee && annee <= feature.properties.has_capitale[id][1])
+				// 	{
+				// 		// id = iden_populations_pays_triees.indexOf(feature.properties.id_element);
+				// 		// if (id != -1 && id < max_pays_simultanes)
+				// 		// {
+				// 		// 	return true;
+				// 		// }
+				// 		return true;
+				// 	}
+				// }
+				// return false;
+			},
+		weight: 1,
+		fillOpacity: 0.6
+	});
 	
 	geoJSONlayer_pays.addTo(map);
 	geoJSONlayer_villes.addTo(map);
+	geoJSONlayer_population_pays.addTo(map);
 }
 
 function get_polygon_centroid(pts) {
@@ -1009,6 +1238,7 @@ function myTimer(intervalle_play)
 		
 		map.removeLayer(geoJSONlayer_pays);
 		map.removeLayer(geoJSONlayer_villes);
+		map.removeLayer(geoJSONlayer_population_pays);
 		
 		annee = nouvelle_annee;
 		determination_caracs_a_cette_date();
