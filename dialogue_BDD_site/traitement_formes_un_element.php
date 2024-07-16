@@ -31,13 +31,13 @@ $aucun_ajout_carac = false;
 if ($id_element != "creation")
 {
 	$prep = $bdd->prepare('UPDATE elements SET couleur = ? WHERE id = ?');
-	$prep->execute(array($couleur_element, intval($id_element)));
+	$prep->execute([$couleur_element, intval($id_element)]);
 }
 // sinon s'il y a création et que des éléments géométriques ont été créé pour cet élément je le crée dans la bdd
 else if ($nombre_lignes_elements > 0)
 {
 	$prep = $bdd->prepare('INSERT INTO elements (type, couleur) VALUES (?, ?)');
-	$prep->execute(array($type_element, $couleur_element));
+	$prep->execute([$type_element, $couleur_element]);
 	$id_element = $bdd->lastInsertId();
 }
 else
@@ -63,24 +63,24 @@ for ($i = 0; $i < $nombre_lignes_elements; $i++) {
 			$prep = $bdd->prepare('UPDATE formes SET champ = "geometry", valeur = ?, annee_debut = ?, annee_fin = ? WHERE id = ?');
 			if ($type_element == "pays") 
 			{
-				$prep->execute(array('"geometry": {"type" : "MultiPolygon", "coordinates" : ' . $shape . '}', intval($annee_debut), intval($annee_fin), intval($id_bdd)));
+				$prep->execute(['"geometry": {"type" : "MultiPolygon", "coordinates" : ' . $shape . '}', intval($annee_debut), intval($annee_fin), intval($id_bdd)]);
 			} else { 
-				$prep->execute(array('"geometry": {"type" : "Point", "coordinates" : ' . $shape . '}', intval($annee_debut), intval($annee_fin), intval($id_bdd)));
+				$prep->execute(['"geometry": {"type" : "Point", "coordinates" : ' . $shape . '}', intval($annee_debut), intval($annee_fin), intval($id_bdd)]);
 			}
 			$bool = true;
 			break;
 		case 2:
 			$prep = $bdd->prepare('INSERT INTO formes (id_element, champ, valeur, annee_debut, annee_fin) VALUES (?, "geometry", ?, ?, ?)');
 			if ($type_element == "pays") {
-				$prep->execute(array(intval($id_element), '"geometry": {"type" : "MultiPolygon", "coordinates" : ' . $shape . '}', intval($annee_debut), intval($annee_fin))); 
+				$prep->execute([intval($id_element), '"geometry": {"type" : "MultiPolygon", "coordinates" : ' . $shape . '}', intval($annee_debut), intval($annee_fin)]); 
 			} else {
-				$prep->execute(array(intval($id_element), '"geometry": {"type" : "Point", "coordinates" : ' . $shape . '}', intval($annee_debut), intval($annee_fin)));
+				$prep->execute([intval($id_element), '"geometry": {"type" : "Point", "coordinates" : ' . $shape . '}', intval($annee_debut), intval($annee_fin)]);
 			}
 			$bool = true;
 			break;
 		case 3:
 			$prep = $bdd->prepare('DELETE FROM formes WHERE id = ?');
-			$prep->execute(array(intval($id_bdd)));
+			$prep->execute([intval($id_bdd)]);
 			break;
 	}
 }
@@ -89,10 +89,10 @@ for ($i = 0; $i < $nombre_lignes_elements; $i++) {
 if (!$bool)
 {
 	$prep = $bdd->prepare('DELETE FROM elements WHERE id = ?');
-	$prep->execute(array(intval($id_element)));
+	$prep->execute([intval($id_element)]);
 	
 	$prep = $bdd->prepare('DELETE FROM formes WHERE id_element = ?');
-	$prep->execute(array(intval($id_element)));
+	$prep->execute([intval($id_element)]);
 }
 
 
@@ -116,15 +116,15 @@ if (!$aucun_ajout_carac)
 			switch ($statut) {
 				case 1:
 					$prep = $bdd->prepare('UPDATE formes SET champ = ?, valeur = ?, annee_debut = ?, annee_fin = ? WHERE id = ?');
-					$prep->execute(array($key_carac, $valeur, intval($annee_debut), intval($annee_fin), intval($elmt[4])));
+					$prep->execute([$key_carac, $valeur, intval($annee_debut), intval($annee_fin), intval($elmt[4])]);
 					break;
 				case 2:
 					$prep = $bdd->prepare('INSERT INTO formes (id_element, champ, valeur, annee_debut, annee_fin) VALUES (?, ?, ?, ?, ?)');
-					$prep->execute(array(intval($id_element), $key_carac, $valeur, intval($annee_debut), intval($annee_fin)));
+					$prep->execute([intval($id_element), $key_carac, $valeur, intval($annee_debut), intval($annee_fin)]);
 					break;
 				case 3:
 					$prep = $bdd->prepare('DELETE FROM formes WHERE id = ?');
-					$prep->execute(array(intval($elmt[4])));
+					$prep->execute([intval($elmt[4])]);
 					break;
 			}
 		}
