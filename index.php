@@ -331,9 +331,15 @@ $( "#slider_range" ).slider({
 	slide: function( event, ui ) {
 		$( "#slider_date_annee" ).val(ui.value);
 		
-		map.removeLayer(geoJSONlayer_pays);
-		map.removeLayer(geoJSONlayer_villes);
-		map.removeLayer(geoJSONlayer_population_pays);
+		if (map.hasLayer(geoJSONlayer_pays)) {
+			map.removeLayer(geoJSONlayer_pays);
+		}
+		if (map.hasLayer(geoJSONlayer_villes)) {
+			map.removeLayer(geoJSONlayer_villes);
+		}
+		if (map.hasLayer(geoJSONlayer_population_pays)) {
+			map.removeLayer(geoJSONlayer_population_pays);
+		}
 		
 		annee = parseInt($( "#slider_date_annee" ).val());
 		determination_caracs_a_cette_date();
@@ -346,9 +352,15 @@ $( "#slider_range" ).slider({
 $( "#slider_date_annee" ).bind('change', function(){
 	$( "#slider_range" ).slider('value', $( "#slider_date_annee" ).val());
 	
-	map.removeLayer(geoJSONlayer_pays);
-	map.removeLayer(geoJSONlayer_villes);
-	map.removeLayer(geoJSONlayer_population_pays);
+	if (map.hasLayer(geoJSONlayer_pays)) {
+		map.removeLayer(geoJSONlayer_pays);
+	}
+	if (map.hasLayer(geoJSONlayer_villes)) {
+		map.removeLayer(geoJSONlayer_villes);
+	}
+	if (map.hasLayer(geoJSONlayer_population_pays)) {
+		map.removeLayer(geoJSONlayer_population_pays);
+	}
 	
 	annee = parseInt($( "#slider_date_annee" ).val());
 	determination_caracs_a_cette_date();
@@ -395,9 +407,15 @@ map.on('moveend', function() {
 	
 function reset_figures()
 {
-	map.removeLayer(geoJSONlayer_pays);
-	map.removeLayer(geoJSONlayer_villes);
-	map.removeLayer(geoJSONlayer_population_pays);
+	if (map.hasLayer(geoJSONlayer_pays)) {
+		map.removeLayer(geoJSONlayer_pays);
+	}
+	if (map.hasLayer(geoJSONlayer_villes)) {
+		map.removeLayer(geoJSONlayer_villes);
+	}
+	if (map.hasLayer(geoJSONlayer_population_pays)) {
+		map.removeLayer(geoJSONlayer_population_pays);
+	}
 	
 	affichage_figures();
 }
@@ -825,10 +843,15 @@ function affichage_pays(){
 			
 				type_actif = feature.properties.type_element;
 				
-				map.removeLayer(geoJSONlayer_pays);
-				map.removeLayer(geoJSONlayer_villes);
-				map.removeLayer(geoJSONlayer_population_pays);
-				
+				if (map.hasLayer(geoJSONlayer_pays)) {
+					map.removeLayer(geoJSONlayer_pays);
+				}
+				if (map.hasLayer(geoJSONlayer_villes)) {
+					map.removeLayer(geoJSONlayer_villes);
+				}
+				if (map.hasLayer(geoJSONlayer_population_pays)) {
+					map.removeLayer(geoJSONlayer_population_pays);
+				}
 				determination_caracs_a_cette_date();
 				affichage_figures();
 				
@@ -879,10 +902,15 @@ function affichage_villes(iden_populations_villes_triees, max_pop_local_ville){
 			
 				type_actif = feature.properties.type_element;
 				
-				map.removeLayer(geoJSONlayer_pays);
-				map.removeLayer(geoJSONlayer_villes);
-				map.removeLayer(geoJSONlayer_population_pays);
-				
+				if (map.hasLayer(geoJSONlayer_pays)) {
+					map.removeLayer(geoJSONlayer_pays);
+				}
+				if (map.hasLayer(geoJSONlayer_villes)) {
+					map.removeLayer(geoJSONlayer_villes);
+				}
+				if (map.hasLayer(geoJSONlayer_population_pays)) {
+					map.removeLayer(geoJSONlayer_population_pays);
+				}
 				determination_caracs_a_cette_date();
 				affichage_figures();
 				
@@ -1022,9 +1050,15 @@ function affichage_populations_pays(populations_pays_triees, max_pop_local_pays)
 			
 				type_actif = "pays";
 				
-				map.removeLayer(geoJSONlayer_pays);
-				map.removeLayer(geoJSONlayer_villes);
-				map.removeLayer(geoJSONlayer_population_pays);
+				if (map.hasLayer(geoJSONlayer_pays)) {
+					map.removeLayer(geoJSONlayer_pays);
+				}
+				if (map.hasLayer(geoJSONlayer_villes)) {
+					map.removeLayer(geoJSONlayer_villes);
+				}
+				if (map.hasLayer(geoJSONlayer_population_pays)) {
+					map.removeLayer(geoJSONlayer_population_pays);
+				}
 				
 				determination_caracs_a_cette_date();
 				affichage_figures();
@@ -1222,9 +1256,15 @@ function myTimer(intervalle_play)
 		$( "#slider_range" ).slider('value', nouvelle_annee);
 		$( "#slider_date_annee" ).val(nouvelle_annee);
 		
-		map.removeLayer(geoJSONlayer_pays);
-		map.removeLayer(geoJSONlayer_villes);
-		map.removeLayer(geoJSONlayer_population_pays);
+		if (map.hasLayer(geoJSONlayer_pays)) {
+			map.removeLayer(geoJSONlayer_pays);
+		}
+		if (map.hasLayer(geoJSONlayer_villes)) {
+			map.removeLayer(geoJSONlayer_villes);
+		}
+		if (map.hasLayer(geoJSONlayer_population_pays)) {
+			map.removeLayer(geoJSONlayer_population_pays);
+		}
 		
 		annee = nouvelle_annee;
 		determination_caracs_a_cette_date();
