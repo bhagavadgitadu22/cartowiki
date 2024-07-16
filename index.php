@@ -1055,9 +1055,9 @@ function affichage_populations_pays(populations_pays_triees, max_pop_local_pays)
 				geojsonMarkerOptions.fillOpacity = 0;
 			}
 			else {
-				geojsonMarkerOptions.radius = Math.max(15*Math.sqrt(population_id[0]/max_pop_local_pays), 3);
+				geojsonMarkerOptions.radius = Math.max(45*Math.sqrt(population_id[0]/max_pop_local_pays), 3);
 				geojsonMarkerOptions.weight = 1;
-				geojsonMarkerOptions.fillOpacity = 1;
+				geojsonMarkerOptions.fillOpacity = 0.2;
 			}
 			
 			if (id_actif == feature.properties.id_element) {
