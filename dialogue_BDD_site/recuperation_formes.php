@@ -17,7 +17,7 @@ $reponse = $bdd->query($sql);
 $bool_geojson = false;
 $geojson = '{"type": "FeatureCollection", "features": [';
 
-$caracs = array(
+$caracs = [
     "population" => [],
 	"population_etat" => [],
     "nom" => [],
@@ -26,7 +26,7 @@ $caracs = array(
 	"nomade" => [],
     "source" => [],
 	"latLng" => []
-);
+];
 
 while ($donnees = $reponse->fetch(PDO::FETCH_ASSOC))
 {

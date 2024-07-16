@@ -43,25 +43,25 @@ if ($id_element != "creation")
 	
 	if ($type_element == "pays")
 	{
-		$caracs = array(
+		$caracs = [
 			"population_etat" => [],
 			"nom" => [],
 			"wikipedia" => [],
 			"nomade" => [],
 			"source" => [],
 			"latLng" => []
-		);
+		];
 	}
 	if ($type_element == "ville")
 	{
-		$caracs = array(
+		$caracs = [
 			"population" => [],
 			"nom" => [],
 			"wikipedia" => [],
 			"capitale" => [],
 			"source" => [],
 			"latLng" => []
-		);
+		];
 	}
 
 	$inc = 0;
