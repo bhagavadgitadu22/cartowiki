@@ -471,7 +471,15 @@ map.on('pm:create', function(e) {
 	// voir si un marqueur est déjà présent à cette époque
 	// si oui, le supprimer pour les périodes suivant l'année en cours
 	
-	figures = JSON.parse(figures);
+	try
+	{
+		figures = JSON.parse(figures);
+	}
+	catch (e)
+	{
+		console.log("JSON probably already parsed");
+		console.log(e);
+	}
 	
 	var fin_marqueur = max_annee;
 	
@@ -513,8 +521,6 @@ map.on('pm:create', function(e) {
 		}
 	}
 	
-	figures = JSON.stringify(figures);
-	
 	id_max += 1;
 	
 	var nouvelle_forme = e.layer.toGeoJSON();
@@ -527,9 +533,16 @@ map.on('pm:create', function(e) {
 		annee_fin: fin_marqueur
 	});
 	
-	figures = JSON.parse(figures);
+	try
+	{
+		figures = JSON.parse(figures);
+	}
+	catch (e)
+	{
+		console.log("JSON probably already parsed");
+		console.log(e);
+	}
 	figures.features.push(nouvelle_forme);
-	figures = JSON.stringify(figures);
 	
 	caracs["latLng"][id_max] = [annee, fin_marqueur];
 	if ($("#bouton_latLng").text() == "-")
@@ -551,7 +564,15 @@ map.on('pm:remove', function(e) {
 		var modif = e.layer.toGeoJSON();
 		var id_modifie = modif.properties.id;
 		
-		figures = JSON.parse(figures)
+		try
+		{
+			figures = JSON.parse(figures);
+		}
+		catch (e)
+		{
+			console.log("JSON probably already parsed");
+			console.log(e);
+		}
 		
 		for (index in figures.features)
 		{
@@ -587,8 +608,6 @@ map.on('pm:remove', function(e) {
 		{
 			affichage_annees("latLng");
 		}
-		
-		figures = JSON.stringify(figures);
 		
 		affichage_figures();
 	}
@@ -845,7 +864,15 @@ function affichage_figures_from_scratch()
 		
 		var id_modifie = modif.properties.id;
 		
-		figures = JSON.parse(figures)
+		try
+		{
+			figures = JSON.parse(figures);
+		}
+		catch (e)
+		{
+			console.log("JSON probably already parsed");
+			console.log(e);
+		}
 		
 		for (index in figures.features)
 		{
@@ -884,8 +911,6 @@ function affichage_figures_from_scratch()
 				caracs["latLng"][id_max] = [annee, modif.properties.annee_fin];
 			}
 		}
-		
-		figures = JSON.stringify(figures);
 		
 		if ($("#bouton_latLng").text() == "-")
 		{
@@ -952,8 +977,15 @@ function envoi_forme()
 	{
 		enregistrement_caracteristiques();
 		delete caracs["latLng"];
-		
-		figures = JSON.parse(figures);
+		try
+		{
+			figures = JSON.parse(figures);
+		}
+		catch (e)
+		{
+			console.log("JSON probably already parsed");
+			console.log(e);
+		}
 		
 		var bool = false;
 		var lignes = [];
