@@ -1,17 +1,21 @@
 <?php
+// Get the raw POST data
+$rawData = file_get_contents("php://input");
 
-header('Content-type: text/plain; charset=utf-8');
+// Decode the JSON data into a PHP array
+$data = json_decode($rawData, true);
 
-$id_element = $_POST["id_element"];
-$couleur_element = $_POST["couleur_element"];
-$type_element = $_POST["type_element"];
+// Now you can access the data like a regular array
+$id_element = $data["id_element"];
+$couleur_element = $data["couleur_element"];
+$type_element = $data["type_element"];
 
-$lignes = $_POST["lignes"];
+// If the JSON contains an array, you can access it like this
+$lignes = $data["lignes"];
 $nombre_lignes_elements = count($lignes);
-$bool = $_POST["bool"];
+$bool = $data["bool"];
 
-$caracs = $_POST["caracs"];
-
+$caracs = $data["caracs"];
 
 
 try
