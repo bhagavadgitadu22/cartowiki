@@ -456,13 +456,17 @@ var autres_boutons = L.Control.extend({
 						annee_fin: max_annee
 					});
 
-					figures = JSON.parse(figures);
+					try {
+						figures = JSON.parse(figures);
+					}
+					catch (e) {
+						console.log("Figures était deja parse, pas besoin de le refaire");
+						console.log(e);
+					}
 	
 					figures.features.push(nouvelle_forme);
 					
 					prev.changement.push({id : id_max, prev : ""});
-	
-					figures = JSON.stringify(figures);
 					
 					caracs["latLng"][id_max] = [annee, max_annee];
 				}
@@ -516,7 +520,13 @@ var autres_boutons = L.Control.extend({
 				$( "#slider_date_annee" ).val(an);
 				$( "#slider_range" ).slider('value', an);
 				
-				figures = JSON.parse(figures)
+				try {
+					figures = JSON.parse(figures);
+				}
+				catch (e) {
+					console.log("Figures était deja parse, pas besoin de le refaire");
+					console.log(e);
+				}
 				
 				for (i in elmt.changement)
 				{
@@ -559,8 +569,6 @@ var autres_boutons = L.Control.extend({
 				
 				post_actions.push(post);
 				
-				figures = JSON.stringify(figures);
-				
 				if ($("#bouton_latLng").text() == "-")
 				{
 					affichage_annees("latLng");
@@ -583,7 +591,13 @@ var autres_boutons = L.Control.extend({
 				$( "#slider_date_annee" ).val(an);
 				$( "#slider_range" ).slider('value', an);
 				
-				figures = JSON.parse(figures)
+				try {
+					figures = JSON.parse(figures);
+				}
+				catch (e) {
+					console.log("Figures était deja parse, pas besoin de le refaire");
+					console.log(e);
+				}
 				
 				for (i in elmt.changement)
 				{
@@ -625,8 +639,6 @@ var autres_boutons = L.Control.extend({
 				}
 				
 				prev_actions.push(prev);
-				
-				figures = JSON.stringify(figures);
 				
 				if ($("#bouton_latLng").text() == "-")
 				{
@@ -674,7 +686,13 @@ var autres_boutons = L.Control.extend({
 				
 				prev.changement.push({id : id_max, prev : ""});
 				
-				figures = JSON.parse(figures);
+				try {
+					figures = JSON.parse(figures);
+				}
+				catch (e) {
+					console.log("Figures était deja parse, pas besoin de le refaire");
+					console.log(e);
+				}
 
 				figures.features.push(union);
 				
@@ -744,8 +762,6 @@ var autres_boutons = L.Control.extend({
 					index += 1;
 				}	
 				
-
-				figures = JSON.stringify(figures);
 
 				
 				if ($("#bouton_latLng").text() == "-")
@@ -1090,7 +1106,13 @@ $.post('../dialogue_BDD_site/recuperation_formes_un_element.php', { id_element:i
 			
 			var id_modifie = modif.properties.id;
 			
-			figures = JSON.parse(figures)
+			try {
+				figures = JSON.parse(figures);
+			}
+			catch (e) {
+				console.log("Figures était deja parse, pas besoin de le refaire");
+				console.log(e);
+			}
 			
 			for (index in figures.features)
 			{
@@ -1133,8 +1155,6 @@ $.post('../dialogue_BDD_site/recuperation_formes_un_element.php', { id_element:i
 					caracs["latLng"][id_max] = [annee, modif.properties.annee_fin];
 				}
 			}
-			
-			figures = JSON.stringify(figures);
 			
 			if ($("#bouton_latLng").text() == "-")
 			{
@@ -1222,15 +1242,19 @@ map.on('pm:create', function(e) {
 		annee_fin: max_annee
 	});
 	
-	figures = JSON.parse(figures);
+	try {
+		figures = JSON.parse(figures);
+	}
+	catch (e) {
+		console.log("Figures était deja parse, pas besoin de le refaire");
+		console.log(e);
+	}
 	
 	prev_actions.push({annee : annee, changement : [{id : id_max, prev : ""}]});
 	
 	post_actions = [];
 	
 	figures.features.push(nouvelle_forme);
-	
-	figures = JSON.stringify(figures);
 
 	caracs["latLng"][id_max] = [annee, max_annee];
 	
@@ -1253,7 +1277,13 @@ map.on('pm:remove', function(e) {
 		var modif = e.layer.toGeoJSON();
 		var id_modifie = modif.properties.id;
 		
-		figures = JSON.parse(figures)
+		try {
+			figures = JSON.parse(figures);
+		}
+		catch (e) {
+			console.log("Figures était deja parse, pas besoin de le refaire");
+			console.log(e);
+		}
 		
 		for (index in figures.features)
 		{
@@ -1294,8 +1324,6 @@ map.on('pm:remove', function(e) {
 			affichage_annees("latLng");
 		}
 		
-		figures = JSON.stringify(figures);
-		
 		affichage_figures();
 		
 		for (i in map.pm.Toolbar.buttons)
@@ -1329,7 +1357,13 @@ map.on('pm:cut', function(e) {
 			var nouvelle_forme_coupee = couches[i].toGeoJSON();
 			var id_modifie = nouvelle_forme_coupee.properties.id;
 			
-			figures = JSON.parse(figures);
+			try {
+				figures = JSON.parse(figures);
+			}
+			catch (e) {
+				console.log("Figures était deja parse, pas besoin de le refaire");
+				console.log(e);
+			}
 			
 			for (index in figures.features)
 			{
@@ -1395,8 +1429,6 @@ map.on('pm:cut', function(e) {
 					}
 				}
 			}
-			
-			figures = JSON.stringify(figures);
 			
 			if ($("#bouton_latLng").text() == "-")
 			{
@@ -1735,7 +1767,13 @@ function envoi_forme()
 			couleur = $("#html5colorpicker").val();
 		}
 		
-		figures = JSON.parse(figures);
+		try {
+			figures = JSON.parse(figures);
+		}
+		catch (e) {
+			console.log("Figures était deja parse, pas besoin de le refaire");
+			console.log(e);
+		}
 		
 		var bool = false;
 		var lignes = [];
@@ -1787,8 +1825,25 @@ function envoi_forme()
 			}
 		});
 		
-		$.post("../dialogue_BDD_site/traitement_formes_un_element.php", { id_element: id_element, couleur_element:couleur, type_element: type_element, lignes: lignes, caracs: caracs, bool:bool }, function(result) {
-			window.location.href = "../index.php";
+		// Convert data to JSON string
+		var jsonData = JSON.stringify({
+			id_element: id_element,
+			couleur_element: couleur,
+			type_element: type_element,
+			lignes: lignes,
+			caracs: caracs,
+			bool: bool
+		});
+
+		// Use $.ajax to send JSON data
+		$.ajax({
+			url: "../dialogue_BDD_site/traitement_formes_un_element.php",
+			type: "POST",
+			contentType: "application/json",
+			data: jsonData,
+			success: function(result) {
+				window.location.href = "../index.php";
+			}
 		});
 	}
 }
