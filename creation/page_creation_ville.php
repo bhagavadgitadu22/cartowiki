@@ -1027,8 +1027,25 @@ function envoi_forme()
 			}
 		});
 		
-		$.post("../dialogue_BDD_site/traitement_formes_un_element.php", { id_element: id_element, couleur_element: '#000000', type_element: type_element, lignes: lignes, caracs: caracs, bool:bool }, function(result) {
-			window.location.href = "../index.php";
+		// Convert data to JSON string
+		var jsonData = JSON.stringify({
+			id_element: id_element,
+			couleur_element: '#000000',
+			type_element: type_element,
+			lignes: lignes,
+			caracs: caracs,
+			bool: bool
+		});
+
+		// Use $.ajax to send JSON data
+		$.ajax({
+			url: "../dialogue_BDD_site/traitement_formes_un_element.php",
+			type: "POST",
+			contentType: "application/json",
+			data: jsonData,
+			success: function(result) {
+				window.location.href = "../index.php";
+			}
 		});
 	}
 }
