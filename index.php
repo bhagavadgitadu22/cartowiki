@@ -468,42 +468,6 @@ function determination_liste_centroid()
 			var id_pays = figures.features[id_multipolygon].properties.id_element;
 			var centroid = get_polygon_centroid(figures.features[id_multipolygon].geometry.coordinates[polygon][0]);
 			var has_capitale = [];
-			// var annee_debut_polygone = figures.features[id_multipolygon].properties.annee_debut;
-			// var annee_fin_polygone = figures.features[id_multipolygon].properties.annee_fin;
-			// for (var instance_capitale in caracs["capitale"])
-			// {
-			// 	var annee_debut_capitale = caracs["capitale"][instance_capitale][0];
-			// 	var annee_fin_capitale = caracs["capitale"][instance_capitale][1];
-			// 	// Si la ville correspond aux dates du polygone et que c'est une capitale
-			// 	if (!caracs["capitale"][instance_capitale][2] && !( annee_debut_polygone <= annee_debut_capitale <= annee_fin_polygone || annee_debut_polygone <= annee_fin_capitale <= annee_fin_polygone || annee_debut_capitale <= annee_debut_polygone <= annee_fin_capitale || annee_debut_capitale <= annee_fin_polygone <= annee_fin_capitale))
-			// 	{
-			// 		continue;
-			// 	}
-			// 	// Si la capitale se trouve dans le polygone aux bonnes dates
-			// 	for (var position_id in caracs["latLng"][instance_capitale]){
-			// 		var annee_debut_position_capitale = caracs["latLng"][instance_capitale][position_id][0];
-			// 		var annee_fin_position_capitale = caracs["latLng"][instance_capitale][position_id][1];
-			// 		if (!( annee_debut_polygone <= annee_debut_position_capitale <= annee_fin_polygone || annee_debut_polygone <= annee_fin_position_capitale <= annee_fin_polygone || annee_debut_position_capitale <= annee_debut_polygone <= annee_fin_position_capitale || annee_debut_position_capitale <= annee_fin_polygone <= annee_fin_position_capitale))
-			// 		{
-			// 			continue;
-			// 		}
-			// 		if (!( annee_debut_capitale <= annee_debut_position_capitale <= annee_fin_capitale || annee_debut_capitale <= annee_fin_position_capitale <= annee_fin_capitale|| annee_debut_position_capitale <= annee_debut_capitale <= annee_fin_position_capitale || annee_debut_position_capitale <= annee_fin_capitale <= annee_fin_position_capitale))
-			// 		{
-			// 			continue;
-			// 		}
-			// 		min_annee_fin = Math.min(annee_fin_polygone, annee_fin_capitale, annee_fin_position_capitale);
-			// 		max_annee_debut = Math.max(annee_debut_polygone, annee_debut_capitale, annee_debut_position_capitale);
-			// 		if (min_annee_fin < max_annee_debut)
-			// 		{
-			// 			continue;
-			// 		}
-			// 		if (isMarkerInsidePolygon(caracs["latLng"][instance_capitale],figures.features[id_multipolygon].geometry.coordinates[polygon]))
-			// 		{
-			// 			has_capitale.push([max_annee_debut, min_annee_fin]);
-			// 			break;
-			// 		}
-			// 	}
-			// }
 			var geojsonFeature = {
 				"type": "Feature",
 				"properties": {
@@ -1223,12 +1187,12 @@ function affichage_nom_pays(populations_pays_triees, iden_taille_pays_triees){
 			continue;
 		}
 		id_tri_taille_population = iden_taille_pays_triees.indexOf(centroids[id].properties.id_element);
-		if (id_tri_taille_population == -1 || id_tri_taille_population > 10)
+		if (id_tri_taille_population == -1 || id_tri_taille_population > 15)
 		{
 			continue;
 		}
 		// En dessous d'un certain poucentage d'aire visible à l'ecran, on n'affiche pas le nom du pays
-		if (population[3] < 0.1){
+		if (population[3] < 0.12){
 			continue;
 		}
 		var nom_id;
