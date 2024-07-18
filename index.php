@@ -391,7 +391,6 @@ $( "#slider_play" ).change(function(e) {
 $.post('dialogue_BDD_site/recuperation_formes.php', function(result) {
 	
 		result = result.split(";;;");
-        // console.log(result);
 		
 		figures = JSON.parse(result[0]);
 
@@ -685,8 +684,8 @@ function affichage_figures()
 	if (is_checked){
 		// pour ne garder que les pays aux populations les plus grandes de la région concernée
 		var populations_pays_triees = [];
-		var iden_populations_pays_triees = [];
-		tri_populations_pays(populations_pays_triees, iden_populations_pays_triees, map_bounds);
+		var iden_taille_pays_triees = [];
+		tri_populations_pays(populations_pays_triees, iden_taille_pays_triees, map_bounds);
 
 		// détermination du max à cette année
 		var max_pop_local_pays;
@@ -694,7 +693,7 @@ function affichage_figures()
 			max_pop_local_pays = populations_pays_triees[0][1];
 		}
 		affichage_populations_pays(populations_pays_triees, max_pop_local_pays);
-		affichage_nom_pays(populations_pays_triees, iden_populations_pays_triees);
+		affichage_nom_pays(populations_pays_triees, iden_taille_pays_triees);
 		geoJSONlayer_villes = new L.geoJSON();
 		map.addLayer(geoJSONlayer_villes);
 	}
@@ -755,7 +754,7 @@ function tri_populations_villes(populations_villes_triees, iden_populations_vill
 	}
 }
 
-function tri_populations_pays(populations_pays_triees, iden_populations_pays_triees, map_bounds){
+function tri_populations_pays(populations_pays_triees, iden_taille_pays_triees, map_bounds){
 	for (var id_multipolygon in figures.features) 
 	{
 		// Si l'année n'est pas comprise dans la période de validité de la carac, on passe au multipolygon suivant
@@ -789,17 +788,18 @@ function tri_populations_pays(populations_pays_triees, iden_populations_pays_tri
 			if(typeof(populations_pays_triees.find(x => x[0] == id_pays)) == "undefined"){
 				if (typeof(population_id) != "undefined" && population_id[0] != "" && population_id[0] != "inconnu")
 				{
-					populations_pays_triees.push([id_pays, population_id[0], figures.features[id_multipolygon].geometry.coordinates[polygon][0].length]);
+					populations_pays_triees.push([id_pays, population_id[0], figures.features[id_multipolygon].geometry.coordinates[polygon][0].length, calcul_aire_visible_polygone(figures.features[id_multipolygon].geometry.coordinates[polygon][0], map_bounds)]);
 				}
 				else
 				{
-					populations_pays_triees.push([id_pays, 0, figures.features[id_multipolygon].geometry.coordinates[polygon][0].length]);
+					populations_pays_triees.push([id_pays, 0, figures.features[id_multipolygon].geometry.coordinates[polygon][0].length, calcul_aire_visible_polygone(figures.features[id_multipolygon].geometry.coordinates[polygon][0], map_bounds)]);
 				}
 			}
 			else{
 				population_pays = populations_pays_triees.find(x => x[0] == id_pays);
 				if(figures.features[id_multipolygon].geometry.coordinates[polygon][0].length > population_pays[2]){
 					population_pays[2] = figures.features[id_multipolygon].geometry.coordinates[polygon][0].length;
+					population_pays[3] = calcul_aire_visible_polygone(figures.features[id_multipolygon].geometry.coordinates[polygon][0], map_bounds);
 				}
 			}
 		}
@@ -808,14 +808,33 @@ function tri_populations_pays(populations_pays_triees, iden_populations_pays_tri
 	populations_pays_triees.sort(function(a, b) {
 		return b[1] - a[1];
 	});
-	
+
+	var taille_pays_triees = [];
 	for (var id in populations_pays_triees)
 	{
-		id_pop = parseInt(populations_pays_triees[id][0]);
-		valeur = populations_pays_triees[id][1];
-		
-		iden_populations_pays_triees.push(id_pop);
+		taille_pays_triees.push([populations_pays_triees[id][0], populations_pays_triees[id][3]]);
 	}
+
+	taille_pays_triees.sort(function(a, b) {
+		return b[1] - a[1];
+	});
+	
+	for (var id in taille_pays_triees)
+	{
+		id_pop = parseInt(taille_pays_triees[id][0]);
+		valeur = taille_pays_triees[id][1];
+		
+		iden_taille_pays_triees.push(id_pop);
+	}
+}
+
+function deep_copy_array($array) {
+    return array_map(function($item) {
+        if (is_array($item)) {
+            return deep_copy_array($item);
+        }
+        return $item;
+    }, $array);
 }
 
 function affichage_pays(){
@@ -1183,8 +1202,7 @@ function get_polygon_centroid(pts) {
 	return [x/f, y/f];
 }
 
-function affichage_nom_pays(populations_pays_triees, iden_populations_pays_triees){
-	console.log(centroids);
+function affichage_nom_pays(populations_pays_triees, iden_taille_pays_triees){
 	// remove all layers with marker icon with class nom_pays
 	map.eachLayer(function (layer) {
 		//if it is not a tile layer, remove it
@@ -1194,7 +1212,6 @@ function affichage_nom_pays(populations_pays_triees, iden_populations_pays_triee
 		}
 	});
 	for (var id in centroids){
-
 		if (!((centroids[id].properties.annee_debut <= annee) && (annee <= centroids[id].properties.annee_fin))){
 			continue;
 		}
@@ -1205,33 +1222,29 @@ function affichage_nom_pays(populations_pays_triees, iden_populations_pays_triee
 		if (!(population[2] <= centroids[id].properties.taille_polygone)){
 			continue;
 		}
-		// id = iden_populations_pays_triees.indexOf(centroids[id].properties.id_element);
-		// if (id == -1 || id > max_villes_simultanees)
-		// {
-		// 	continue;
-		// }
+		id_tri_taille_population = iden_taille_pays_triees.indexOf(centroids[id].properties.id_element);
+		if (id_tri_taille_population == -1 || id_tri_taille_population > 10)
+		{
+			continue;
+		}
+		// En dessous d'un certain poucentage d'aire visible à l'ecran, on n'affiche pas le nom du pays
+		if (population[3] < 0.1){
+			continue;
+		}
 		var nom_id;
 		if (caracs_a_cette_date["nom"][centroids[id].properties.id_element] != undefined)
 		{
 			nom_id = caracs_a_cette_date["nom"][centroids[id].properties.id_element][0];
 		}
 		if (nom_id != undefined && nom_id != "") {
-					
-			console.log("centroids[id].properties.id_element");
-			console.log(centroids[id].properties.id_element);
-			console.log("populations_pays_triees.find(x => x[0] == centroids[id].properties.id_element)");
-			console.log(populations_pays_triees.find(x => x[0] == centroids[id].properties.id_element));
-			console.log("nom_id");
-			console.log(nom_id);
 			var latLng = L.latLng(centroids[id].geometry.coordinates[1], centroids[id].geometry.coordinates[0]);
 			var nom = L.marker(latLng, {
 				icon: L.divIcon({
 					className: 'nom_pays',
-					html: nom_id
+					html: nom_id,
+					iconSize: [100, 20]
 				})
 			});
-			console.log("nom");
-			console.log(nom);
 			nom.addTo(map);
 		}
 	}
@@ -1252,6 +1265,37 @@ function getLayerTypeName(layer)
     {
         return 'Unknown';
     }
+}
+
+/// Fonction pour calculer l'aire visible d'un polygone sur la carte, resultat en poucentage de l'aire totale visible à l'ecran
+function calcul_aire_visible_polygone(polygon, map_bounds){
+	var area = 0;
+	var j = polygon.length - 1;
+	for (var i = 0; i < polygon.length; i++){
+		if (L.latLngBounds(map_bounds).contains([polygon[i][1], polygon[i][0]])){
+			area += (polygon[j][0] + polygon[i][0]) * (polygon[j][1] - polygon[i][1]);
+		}
+		j = i;
+	}
+	map_polygon = [];
+	map_polygon.push([map_bounds._northEast.lng, map_bounds._northEast.lat]);
+	map_polygon.push([map_bounds._northEast.lng, map_bounds._southWest.lat]);
+	map_polygon.push([map_bounds._southWest.lng, map_bounds._southWest.lat]);
+	map_polygon.push([map_bounds._southWest.lng, map_bounds._northEast.lat]);
+	map_aire = calcul_aire_polygone(map_polygon);
+	
+	return Math.abs(100 * area / (2 * map_aire));
+}
+
+/// Fonction pour calculer l'aire d'un polygone
+function calcul_aire_polygone(polygon){
+	var area = 0;
+	var j = polygon.length - 1;
+	for (var i = 0; i < polygon.length; i++){
+		area += (polygon[j][0] + polygon[i][0]) * (polygon[j][1] - polygon[i][1]);
+		j = i;
+	}
+	return Math.abs(area / 2);
 }
 
 function actualisation_conteneur_droite()
