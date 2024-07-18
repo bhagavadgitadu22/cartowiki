@@ -657,6 +657,7 @@ function affichage_figures()
 			max_pop_local_pays = populations_pays_triees[0][1];
 		}
 		affichage_populations_pays(populations_pays_triees, max_pop_local_pays);
+		supprimer_toutes_les_layer_sauf_type("Layer");
 		affichage_nom_pays(populations_pays_triees, iden_taille_pays_triees);
 		geoJSONlayer_villes = new L.geoJSON();
 		map.addLayer(geoJSONlayer_villes);
@@ -673,6 +674,7 @@ function affichage_figures()
 			max_pop_local_ville = populations_villes_triees[0][1];
 		}
 		affichage_villes(iden_populations_villes_triees, max_pop_local_ville);
+		supprimer_toutes_les_layer_sauf_type("Layer");
 		geoJSONlayer_population_pays = new L.geoJSON();
 		map.addLayer(geoJSONlayer_population_pays);
 	}
@@ -1167,14 +1169,6 @@ function get_polygon_centroid(pts) {
 }
 
 function affichage_nom_pays(populations_pays_triees, iden_taille_pays_triees){
-	// remove all layers with marker icon with class nom_pays
-	map.eachLayer(function (layer) {
-		//if it is not a tile layer, remove it
-		if (getLayerTypeName(layer) != 'Layer')
-		{
-			map.removeLayer(layer);
-		}
-	});
 	for (var id in centroids){
 		if (!((centroids[id].properties.annee_debut <= annee) && (annee <= centroids[id].properties.annee_fin))){
 			continue;
@@ -1187,12 +1181,12 @@ function affichage_nom_pays(populations_pays_triees, iden_taille_pays_triees){
 			continue;
 		}
 		id_tri_taille_population = iden_taille_pays_triees.indexOf(centroids[id].properties.id_element);
-		if (id_tri_taille_population == -1 || id_tri_taille_population > 15)
+		if (id_tri_taille_population == -1 || id_tri_taille_population > 20)
 		{
 			continue;
 		}
 		// En dessous d'un certain poucentage d'aire visible à l'ecran, on n'affiche pas le nom du pays
-		if (population[3] < 0.12){
+		if (population[3] < 0.11){
 			continue;
 		}
 		var nom_id;
@@ -1205,7 +1199,7 @@ function affichage_nom_pays(populations_pays_triees, iden_taille_pays_triees){
 			var nom = L.marker(latLng, {
 				icon: L.divIcon({
 					className: 'nom_pays',
-					html: nom_id,
+					html: '<div style="text-align: center;">' + nom_id + '</div>',
 					iconSize: [100, 20]
 				})
 			});
@@ -1260,6 +1254,26 @@ function calcul_aire_polygone(polygon){
 		j = i;
 	}
 	return Math.abs(area / 2);
+}
+
+function supprimer_layer_de_type(type){
+	map.eachLayer(function (layer) {
+		//if it is not a tile layer, remove it
+		if (getLayerTypeName(layer) == type)
+		{
+			map.removeLayer(layer);
+		}
+	});
+}
+
+function supprimer_toutes_les_layer_sauf_type(type){
+	map.eachLayer(function (layer) {
+		//if it is not a tile layer, remove it
+		if (getLayerTypeName(layer) != type)
+		{
+			map.removeLayer(layer);
+		}
+	});
 }
 
 function actualisation_conteneur_droite()
