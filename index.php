@@ -1120,30 +1120,6 @@ function affichage_nom_pays(populations_pays_triees, iden_taille_pays_triees){
 	}
 }
 
-/// Fonction pour calculer l'aire visible d'un polygone sur la carte, resultat en poucentage de l'aire totale visible à l'ecran
-function calcul_aire_visible_polygone(polygon, map_bounds, map_aire){
-	var area = 0;
-	var j = polygon.length - 1;
-	for (var i = 0; i < polygon.length; i++){
-		if (L.latLngBounds(map_bounds).contains([polygon[i][1], polygon[i][0]])){
-			area += (polygon[j][0] + polygon[i][0]) * (polygon[j][1] - polygon[i][1]);
-		}
-		j = i;
-	}
-	return Math.abs(100 * area / (2 * map_aire));
-}
-
-/// Fonction pour calculer l'aire d'un polygone
-function calcul_aire_polygone(polygon){
-	var area = 0;
-	var j = polygon.length - 1;
-	for (var i = 0; i < polygon.length; i++){
-		area += (polygon[j][0] + polygon[i][0]) * (polygon[j][1] - polygon[i][1]);
-		j = i;
-	}
-	return Math.abs(area / 2);
-}
-
 function supprimer_layer_de_type(type){
 	map.eachLayer(function (layer) {
 		//if it is not a tile layer, remove it
@@ -1257,11 +1233,9 @@ function myTimer(intervalle_play)
 		$( "#slider_range" ).slider('value', nouvelle_annee);
 		$( "#slider_date_annee" ).val(nouvelle_annee);
 		
-		supprimer_layer_principales();
-		
 		annee = nouvelle_annee;
 		determination_caracs_a_cette_date();
-		affichage_figures();
+		reset_figures();
 		
 		if (id_actif != "") { actualisation_conteneur_droite(); };
 	}
