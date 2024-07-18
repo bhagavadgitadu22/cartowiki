@@ -26,6 +26,7 @@
 	<script src="//code.jquery.com/jquery-1.10.2.js"></script>
 	<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 	<script type="text/javascript" src="js/custom/geometry.js"></script>
+	<script type="text/javascript" src="js/custom/tools.js"></script>
 	
 	<link rel="stylesheet" href="css/style.css" />
 	
@@ -755,15 +756,6 @@ function tri_populations_pays(populations_pays_triees, iden_taille_pays_triees, 
 	}
 }
 
-function deep_copy_array($array) {
-    return array_map(function($item) {
-        if (is_array($item)) {
-            return deep_copy_array($item);
-        }
-        return $item;
-    }, $array);
-}
-
 function affichage_pays(){
 	geoJSONlayer_pays = new L.geoJSON(figures, {
 		smoothFactor: 0,
@@ -1101,12 +1093,12 @@ function affichage_nom_pays(populations_pays_triees, iden_taille_pays_triees){
 			continue;
 		}
 		id_tri_taille_population = iden_taille_pays_triees.indexOf(centroids[id].properties.id_element);
-		if (id_tri_taille_population == -1 || id_tri_taille_population > 30)
+		if (id_tri_taille_population == -1 || id_tri_taille_population > 25)
 		{
 			continue;
 		}
 		// En dessous d'un certain poucentage d'aire visible à l'ecran, on n'affiche pas le nom du pays
-		if (population[3] < 0.11){
+		if (population[3] < 0.12){
 			continue;
 		}
 		var nom_id;
@@ -1128,23 +1120,6 @@ function affichage_nom_pays(populations_pays_triees, iden_taille_pays_triees){
 	}
 }
 
-function getLayerTypeName(layer)
-{
-    if (layer instanceof L.Marker){
-        return 'Marker';
-    }
-    else if (layer instanceof L.Tooltip){
-        return 'Tooltip';
-    }
-    else if (layer instanceof L.Layer){
-        return 'Layer';
-    }
-    else
-    {
-        return 'Unknown';
-    }
-}
-
 /// Fonction pour calculer l'aire visible d'un polygone sur la carte, resultat en poucentage de l'aire totale visible à l'ecran
 function calcul_aire_visible_polygone(polygon, map_bounds, map_aire){
 	var area = 0;
@@ -1155,7 +1130,6 @@ function calcul_aire_visible_polygone(polygon, map_bounds, map_aire){
 		}
 		j = i;
 	}
-	
 	return Math.abs(100 * area / (2 * map_aire));
 }
 
