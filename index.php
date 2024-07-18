@@ -25,6 +25,7 @@
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" type="text/css">
 	<script src="//code.jquery.com/jquery-1.10.2.js"></script>
 	<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+	<script type="text/javascript" src="js/custom/geometry.js"></script>
 	
 	<link rel="stylesheet" href="css/style.css" />
 	
@@ -146,6 +147,7 @@
 		</div>
 	</div>
 
+	
 
 <script>
 // changement Leaflet
@@ -490,24 +492,6 @@ function determination_liste_centroid()
 	}
 }
 
-function isMarkerInsidePolygon(marker, poly) {
-    var inside = false;
-    var x = marker[0], y = marker[1];
-    for (var ii=0;ii<poly.length;ii++){
-        var polyPoints = poly[ii];
-        for (var i = 0, j = polyPoints.length - 1; i < polyPoints.length; j = i++) {
-            var xi = polyPoints[i][0], yi = polyPoints[i][1];
-            var xj = polyPoints[j][0], yj = polyPoints[j][1];
-
-            var intersect = ((yi > y) != (yj > y))
-                && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-            if (intersect) inside = !inside;
-        }
-    }
-
-    return inside;
-};
-
 function determination_caracs_a_cette_date()
 {
 	Object.keys(caracs).forEach(function (key) {
@@ -721,6 +705,12 @@ function tri_populations_villes(populations_villes_triees, iden_populations_vill
 }
 
 function tri_populations_pays(populations_pays_triees, iden_taille_pays_triees, map_bounds){
+	map_polygon = [];
+	map_polygon.push([map_bounds._northEast.lng, map_bounds._northEast.lat]);
+	map_polygon.push([map_bounds._northEast.lng, map_bounds._southWest.lat]);
+	map_polygon.push([map_bounds._southWest.lng, map_bounds._southWest.lat]);
+	map_polygon.push([map_bounds._southWest.lng, map_bounds._northEast.lat]);
+	map_aire = calcul_aire_polygone(map_polygon);
 	for (var id_multipolygon in figures.features) 
 	{
 		// Si l'année n'est pas comprise dans la période de validité de la carac, on passe au multipolygon suivant
@@ -754,18 +744,18 @@ function tri_populations_pays(populations_pays_triees, iden_taille_pays_triees, 
 			if(typeof(populations_pays_triees.find(x => x[0] == id_pays)) == "undefined"){
 				if (typeof(population_id) != "undefined" && population_id[0] != "" && population_id[0] != "inconnu")
 				{
-					populations_pays_triees.push([id_pays, population_id[0], figures.features[id_multipolygon].geometry.coordinates[polygon][0].length, calcul_aire_visible_polygone(figures.features[id_multipolygon].geometry.coordinates[polygon][0], map_bounds)]);
+					populations_pays_triees.push([id_pays, population_id[0], figures.features[id_multipolygon].geometry.coordinates[polygon][0].length, calcul_aire_visible_polygone(figures.features[id_multipolygon].geometry.coordinates[polygon][0], map_bounds, map_aire)]);
 				}
 				else
 				{
-					populations_pays_triees.push([id_pays, 0, figures.features[id_multipolygon].geometry.coordinates[polygon][0].length, calcul_aire_visible_polygone(figures.features[id_multipolygon].geometry.coordinates[polygon][0], map_bounds)]);
+					populations_pays_triees.push([id_pays, 0, figures.features[id_multipolygon].geometry.coordinates[polygon][0].length, calcul_aire_visible_polygone(figures.features[id_multipolygon].geometry.coordinates[polygon][0], map_bounds, map_aire)]);
 				}
 			}
 			else{
 				population_pays = populations_pays_triees.find(x => x[0] == id_pays);
 				if(figures.features[id_multipolygon].geometry.coordinates[polygon][0].length > population_pays[2]){
 					population_pays[2] = figures.features[id_multipolygon].geometry.coordinates[polygon][0].length;
-					population_pays[3] = calcul_aire_visible_polygone(figures.features[id_multipolygon].geometry.coordinates[polygon][0], map_bounds);
+					population_pays[3] = calcul_aire_visible_polygone(figures.features[id_multipolygon].geometry.coordinates[polygon][0], map_bounds, map_aire);
 				}
 			}
 		}
@@ -1143,31 +1133,6 @@ function affichage_populations_pays(populations_pays_triees, max_pop_local_pays)
 	geoJSONlayer_population_pays.addTo(map);
 }
 
-function get_polygon_centroid(pts) {
-	// make a copy of ths pts array that doesn't modify pts when modified
-	var ptsCopy = JSON.parse(JSON.stringify(pts));
-	var first = ptsCopy[0], last = ptsCopy[ptsCopy.length-1];
-	if (first[0] != last[0] || first[1] != last[1]) {
-		ptsCopy.push(first);
-	}
-	var twicearea=0,
-	x=0, y=0,
-	nPts = ptsCopy.length,
-	p1, p2, f;
-	for ( var i=0, j=nPts-1 ; i<nPts ; j=i++ ) {
-		p1 = ptsCopy[i]; p2 = ptsCopy[j];
-		f = p1[0]*p2[1] - p2[0]*p1[1];
-		twicearea += f;
-		x += ( p1[0] + p2[0] ) * f;
-		y += ( p1[1] + p2[1] ) * f;
-	}
-	f = twicearea * 3;
-	if(f == 0) {
-		return [first[0],first[1]];
-	}
-	return [x/f, y/f];
-}
-
 function affichage_nom_pays(populations_pays_triees, iden_taille_pays_triees){
 	for (var id in centroids){
 		if (!((centroids[id].properties.annee_debut <= annee) && (annee <= centroids[id].properties.annee_fin))){
@@ -1181,7 +1146,7 @@ function affichage_nom_pays(populations_pays_triees, iden_taille_pays_triees){
 			continue;
 		}
 		id_tri_taille_population = iden_taille_pays_triees.indexOf(centroids[id].properties.id_element);
-		if (id_tri_taille_population == -1 || id_tri_taille_population > 20)
+		if (id_tri_taille_population == -1 || id_tri_taille_population > 30)
 		{
 			continue;
 		}
@@ -1218,7 +1183,7 @@ function getLayerTypeName(layer)
     }
     else if (layer instanceof L.Layer){
         return 'Layer';
-    }        
+    }
     else
     {
         return 'Unknown';
@@ -1226,7 +1191,7 @@ function getLayerTypeName(layer)
 }
 
 /// Fonction pour calculer l'aire visible d'un polygone sur la carte, resultat en poucentage de l'aire totale visible à l'ecran
-function calcul_aire_visible_polygone(polygon, map_bounds){
+function calcul_aire_visible_polygone(polygon, map_bounds, map_aire){
 	var area = 0;
 	var j = polygon.length - 1;
 	for (var i = 0; i < polygon.length; i++){
@@ -1235,12 +1200,6 @@ function calcul_aire_visible_polygone(polygon, map_bounds){
 		}
 		j = i;
 	}
-	map_polygon = [];
-	map_polygon.push([map_bounds._northEast.lng, map_bounds._northEast.lat]);
-	map_polygon.push([map_bounds._northEast.lng, map_bounds._southWest.lat]);
-	map_polygon.push([map_bounds._southWest.lng, map_bounds._southWest.lat]);
-	map_polygon.push([map_bounds._southWest.lng, map_bounds._northEast.lat]);
-	map_aire = calcul_aire_polygone(map_polygon);
 	
 	return Math.abs(100 * area / (2 * map_aire));
 }
