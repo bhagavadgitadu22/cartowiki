@@ -184,6 +184,7 @@ var centroids = [];
 var geoJSONlayer_pays;
 var geoJSONlayer_villes;
 var geoJSONlayer_population_pays;
+var geoJSONlayer_noms_pays;
 
 var id_actif = "";
 var type_actif;
@@ -315,6 +316,15 @@ var bottom_slider = L.Control.extend({
         return sliderContainer;
     }
 });
+
+map.on('load', function() {
+	console.log("map loaded");
+});
+
+map.on('layeradd', function() {
+	console.log("layer added");
+});
+
 
 map.on('resize', function () {
 	dims_map = map.getPixelBounds();
@@ -675,7 +685,8 @@ function affichage_figures()
 	if (is_checked){
 		// pour ne garder que les pays aux populations les plus grandes de la région concernée
 		var populations_pays_triees = [];
-		tri_populations_pays(populations_pays_triees, map_bounds);
+		var iden_populations_pays_triees = [];
+		tri_populations_pays(populations_pays_triees, iden_populations_pays_triees, map_bounds);
 
 		// détermination du max à cette année
 		var max_pop_local_pays;
@@ -683,6 +694,7 @@ function affichage_figures()
 			max_pop_local_pays = populations_pays_triees[0][1];
 		}
 		affichage_populations_pays(populations_pays_triees, max_pop_local_pays);
+		affichage_nom_pays(populations_pays_triees, iden_populations_pays_triees);
 		geoJSONlayer_villes = new L.geoJSON();
 		map.addLayer(geoJSONlayer_villes);
 	}
@@ -743,7 +755,7 @@ function tri_populations_villes(populations_villes_triees, iden_populations_vill
 	}
 }
 
-function tri_populations_pays(populations_pays_triees, map_bounds){
+function tri_populations_pays(populations_pays_triees, iden_populations_pays_triees, map_bounds){
 	for (var id_multipolygon in figures.features) 
 	{
 		// Si l'année n'est pas comprise dans la période de validité de la carac, on passe au multipolygon suivant
@@ -796,6 +808,14 @@ function tri_populations_pays(populations_pays_triees, map_bounds){
 	populations_pays_triees.sort(function(a, b) {
 		return b[1] - a[1];
 	});
+	
+	for (var id in populations_pays_triees)
+	{
+		id_pop = parseInt(populations_pays_triees[id][0]);
+		valeur = populations_pays_triees[id][1];
+		
+		iden_populations_pays_triees.push(id_pop);
+	}
 }
 
 function affichage_pays(){
@@ -1161,6 +1181,77 @@ function get_polygon_centroid(pts) {
 		return [first[0],first[1]];
 	}
 	return [x/f, y/f];
+}
+
+function affichage_nom_pays(populations_pays_triees, iden_populations_pays_triees){
+	console.log(centroids);
+	// remove all layers with marker icon with class nom_pays
+	map.eachLayer(function (layer) {
+		//if it is not a tile layer, remove it
+		if (getLayerTypeName(layer) != 'Layer')
+		{
+			map.removeLayer(layer);
+		}
+	});
+	for (var id in centroids){
+
+		if (!((centroids[id].properties.annee_debut <= annee) && (annee <= centroids[id].properties.annee_fin))){
+			continue;
+		}
+		if (typeof(populations_pays_triees.find(x => x[0] == centroids[id].properties.id_element)) == "undefined"){
+			continue;
+		}
+		population = populations_pays_triees.find(x => x[0] == centroids[id].properties.id_element);
+		if (!(population[2] <= centroids[id].properties.taille_polygone)){
+			continue;
+		}
+		// id = iden_populations_pays_triees.indexOf(centroids[id].properties.id_element);
+		// if (id == -1 || id > max_villes_simultanees)
+		// {
+		// 	continue;
+		// }
+		var nom_id;
+		if (caracs_a_cette_date["nom"][centroids[id].properties.id_element] != undefined)
+		{
+			nom_id = caracs_a_cette_date["nom"][centroids[id].properties.id_element][0];
+		}
+		if (nom_id != undefined && nom_id != "") {
+					
+			console.log("centroids[id].properties.id_element");
+			console.log(centroids[id].properties.id_element);
+			console.log("populations_pays_triees.find(x => x[0] == centroids[id].properties.id_element)");
+			console.log(populations_pays_triees.find(x => x[0] == centroids[id].properties.id_element));
+			console.log("nom_id");
+			console.log(nom_id);
+			var latLng = L.latLng(centroids[id].geometry.coordinates[1], centroids[id].geometry.coordinates[0]);
+			var nom = L.marker(latLng, {
+				icon: L.divIcon({
+					className: 'nom_pays',
+					html: nom_id
+				})
+			});
+			console.log("nom");
+			console.log(nom);
+			nom.addTo(map);
+		}
+	}
+}
+
+function getLayerTypeName(layer)
+{
+    if (layer instanceof L.Marker){
+        return 'Marker';
+    }
+    else if (layer instanceof L.Tooltip){
+        return 'Tooltip';
+    }
+    else if (layer instanceof L.Layer){
+        return 'Layer';
+    }        
+    else
+    {
+        return 'Unknown';
+    }
 }
 
 function actualisation_conteneur_droite()
