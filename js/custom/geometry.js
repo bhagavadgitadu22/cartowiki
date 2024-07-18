@@ -40,3 +40,28 @@ function get_polygon_centroid(pts) {
 	}
 	return [x/f, y/f];
 }
+
+
+/// Fonction pour calculer l'aire visible d'un polygone sur la carte, resultat en poucentage de l'aire totale visible à l'ecran
+function calcul_aire_visible_polygone(polygon, map_bounds, map_aire){
+	var area = 0;
+	var j = polygon.length - 1;
+	for (var i = 0; i < polygon.length; i++){
+		if (L.latLngBounds(map_bounds).contains([polygon[i][1], polygon[i][0]])){
+			area += (polygon[j][0] + polygon[i][0]) * (polygon[j][1] - polygon[i][1]);
+		}
+		j = i;
+	}
+	return Math.abs(100 * area / (2 * map_aire));
+}
+
+/// Fonction pour calculer l'aire d'un polygone
+function calcul_aire_polygone(polygon){
+	var area = 0;
+	var j = polygon.length - 1;
+	for (var i = 0; i < polygon.length; i++){
+		area += (polygon[j][0] + polygon[i][0]) * (polygon[j][1] - polygon[i][1]);
+		j = i;
+	}
+	return Math.abs(area / 2);
+}
