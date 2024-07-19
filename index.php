@@ -84,6 +84,7 @@
 					</div>
 					<button type="button" id="bouton_player" value="play" onclick="play_geojson()">Play</button>
 					<label><input type="checkbox" id="afficher_population_pays_toggle" onclick="reset_figures()">Afficher populations pays</label>
+					<label><input type="checkbox" id="afficher_nom_pays_toggle" onclick="reset_figures()">Afficher nom pays</label>
 				
 				</div>
 				
@@ -587,17 +588,17 @@ function affichage_figures()
 	affichage_pays();
 
 	// Access the checkbox element
-	var checkbox = document.getElementById('afficher_population_pays_toggle');
+	var checkbox_population_pays = document.getElementById('afficher_population_pays_toggle');
 
 	// Check if the checkbox is checked
-	var is_checked = checkbox.checked;
+	var population_pays_is_checked = checkbox_population_pays.checked;
 
-	if (is_checked){
-		// pour ne garder que les pays aux populations les plus grandes de la région concernée
-		var populations_pays_triees = [];
-		var iden_taille_pays_triees = [];
-		tri_populations_pays(populations_pays_triees, iden_taille_pays_triees, map_bounds);
+	// pour ne garder que les pays aux populations les plus grandes de la région concernée
+	var populations_pays_triees = [];
+	var iden_taille_pays_triees = [];
+	tri_populations_pays(populations_pays_triees, iden_taille_pays_triees, map_bounds);
 
+	if (population_pays_is_checked){
 		// détermination du max à cette année
 		var max_pop_local_pays;
 		if (populations_pays_triees.length != 0){
@@ -622,6 +623,7 @@ function affichage_figures()
 		}
 		affichage_villes(iden_populations_villes_triees, max_pop_local_ville);
 		supprimer_toutes_les_layer_sauf_type("Layer");
+		affichage_nom_pays(populations_pays_triees, iden_taille_pays_triees);
 		geoJSONlayer_population_pays = new L.geoJSON();
 		map.addLayer(geoJSONlayer_population_pays);
 	}
@@ -1072,6 +1074,15 @@ function supprimer_layer_principales(){
 }
 
 function affichage_nom_pays(populations_pays_triees, iden_taille_pays_triees){
+	// Access the checkbox element
+	var checkbox_nom_pays = document.getElementById('afficher_nom_pays_toggle');
+
+	// Check if the checkbox is checked
+	var nom_pays_is_checked = checkbox_nom_pays.checked;
+	if (!nom_pays_is_checked){
+		return;
+	}
+
 	for (var id in centroids){
 		if (!((centroids[id].properties.annee_debut <= annee) && (annee <= centroids[id].properties.annee_fin))){
 			continue;
