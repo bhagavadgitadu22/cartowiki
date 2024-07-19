@@ -848,8 +848,16 @@ function affichage_figures_from_scratch()
 	var bouton_clique = reinitialisation_palette_dessin();
 	
 	annee = parseInt($( "#slider_date_annee" ).val());
+	
+	try {
+		figures = JSON.parse(figures);
+	}
+	catch (e) {
+		console.log("Figures était deja parse, pas besoin de le refaire");
+		console.log(e);
+	}
 
-	geoJSONlayer = new L.geoJSON(JSON.parse(figures), {
+	geoJSONlayer = new L.geoJSON(figures, {
 		filter:
 			function(feature) {
 				return (feature.properties.statut <= 2) && (feature.properties.annee_debut <= annee) && (annee <= feature.properties.annee_fin);

@@ -1700,8 +1700,14 @@ function affichage_figures_from_scratch()
 	autre_geoJSONlayer.eachLayer(function (layer) {  
 		layer.setStyle({color: "BEBEBE"});
 	});
-	
-	var inter_gL = new L.geoJSON(JSON.parse(figures), {
+	try {
+		figures = JSON.parse(figures);
+	}
+	catch (e) {
+		console.log("Figures était deja parse, pas besoin de le refaire");
+		console.log(e);
+	}
+	var inter_gL = new L.geoJSON(figures, {
 		filter:
 			function(feature) {
 				return (feature.properties.statut <= 2) && (feature.properties.annee_debut <= annee) && (annee <= feature.properties.annee_fin);
