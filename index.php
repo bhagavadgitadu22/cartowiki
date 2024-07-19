@@ -320,15 +320,6 @@ var bottom_slider = L.Control.extend({
     }
 });
 
-map.on('load', function() {
-	console.log("map loaded");
-});
-
-map.on('layeradd', function() {
-	console.log("layer added");
-});
-
-
 map.on('resize', function () {
 	dims_map = map.getPixelBounds();
 	width_map = dims_map.max.x - dims_map.min.x;
@@ -1240,7 +1231,7 @@ function myTimer(intervalle_play)
 		if (id_actif != "") { actualisation_conteneur_droite(); };
 	}
 }
-	
+
 </script>
 
 </body>
