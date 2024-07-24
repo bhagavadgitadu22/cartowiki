@@ -475,10 +475,9 @@ map.on('pm:create', function(e) {
 	{
 		figures = JSON.parse(figures);
 	}
-	catch (e)
+	catch (error)
 	{
 		console.log("JSON probably already parsed");
-		console.log(e);
 	}
 	
 	var fin_marqueur = max_annee;
@@ -520,7 +519,7 @@ map.on('pm:create', function(e) {
 			}
 		}
 	}
-	
+	figures = JSON.stringify(figures);
 	id_max += 1;
 	
 	var nouvelle_forme = e.layer.toGeoJSON();
@@ -532,17 +531,16 @@ map.on('pm:create', function(e) {
 		annee_debut: annee,
 		annee_fin: fin_marqueur
 	});
-	
 	try
 	{
 		figures = JSON.parse(figures);
 	}
-	catch (e)
+	catch (error)
 	{
 		console.log("JSON probably already parsed");
-		console.log(e);
 	}
 	figures.features.push(nouvelle_forme);
+	figures = JSON.stringify(figures);
 	
 	caracs["latLng"][id_max] = [annee, fin_marqueur];
 	if ($("#bouton_latLng").text() == "-")
@@ -568,10 +566,9 @@ map.on('pm:remove', function(e) {
 		{
 			figures = JSON.parse(figures);
 		}
-		catch (e)
+		catch (error)
 		{
 			console.log("JSON probably already parsed");
-			console.log(e);
 		}
 		
 		for (index in figures.features)
@@ -609,6 +606,7 @@ map.on('pm:remove', function(e) {
 			affichage_annees("latLng");
 		}
 		
+		figures = JSON.stringify(figures);
 		affichage_figures();
 	}
 });
@@ -849,12 +847,13 @@ function affichage_figures_from_scratch()
 	
 	annee = parseInt($( "#slider_date_annee" ).val());
 	
-	try {
+	try
+	{
 		figures = JSON.parse(figures);
 	}
-	catch (e) {
-		console.log("Figures était deja parse, pas besoin de le refaire");
-		console.log(e);
+	catch (error)
+	{
+		console.log("JSON probably already parsed");
 	}
 
 	geoJSONlayer = new L.geoJSON(figures, {
@@ -863,11 +862,13 @@ function affichage_figures_from_scratch()
 				return (feature.properties.statut <= 2) && (feature.properties.annee_debut <= annee) && (annee <= feature.properties.annee_fin);
 			}
 	});
+	figures = JSON.stringify(figures);
 	
 	geoJSONlayer.addTo(map);
 	
 	geoJSONlayer.on('pm:edit', function(e) {
-		
+		console.log("figures pm:edit");
+		console.log(figures);
 		var modif = e.sourceTarget.toGeoJSON();
 		
 		var id_modifie = modif.properties.id;
@@ -876,10 +877,9 @@ function affichage_figures_from_scratch()
 		{
 			figures = JSON.parse(figures);
 		}
-		catch (e)
+		catch (error)
 		{
 			console.log("JSON probably already parsed");
-			console.log(e);
 		}
 		
 		for (index in figures.features)
@@ -920,6 +920,7 @@ function affichage_figures_from_scratch()
 			}
 		}
 		
+		figures = JSON.stringify(figures);
 		if ($("#bouton_latLng").text() == "-")
 		{
 			affichage_annees("latLng");
@@ -989,10 +990,9 @@ function envoi_forme()
 		{
 			figures = JSON.parse(figures);
 		}
-		catch (e)
+		catch (error)
 		{
 			console.log("JSON probably already parsed");
-			console.log(e);
 		}
 		
 		var bool = false;
@@ -1045,16 +1045,25 @@ function envoi_forme()
 			bool: bool
 		});
 
-		// Use $.ajax to send JSON data
-		$.ajax({
-			url: "../dialogue_BDD_site/traitement_formes_un_element.php",
-			type: "POST",
-			contentType: "application/json",
-			data: jsonData,
-			success: function(result) {
-				window.location.href = "../index.php";
-			}
-		});
+		try
+		{
+			// Use $.ajax to send JSON data
+			$.ajax({
+				url: "../dialogue_BDD_site/traitement_formes_un_element.php",
+				type: "POST",
+				contentType: "application/json",
+				data: jsonData,
+				success: function(result) {
+					window.location.href = "../index.php";
+				}
+			});
+		}
+		catch (error)
+		{
+			console.log("Post method failed. Error : ");
+			console.log(error);
+			figures = JSON.stringify(figures);
+		}
 	}
 }
 
