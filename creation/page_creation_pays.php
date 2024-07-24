@@ -436,7 +436,6 @@ var autres_boutons = L.Control.extend({
 		});
 		
 		pasteButton.addEventListener('click', function(e) {
-			
 			if (copie.length != 0)
 			{	
 				var prev = {annee : annee, changement : []};
@@ -455,16 +454,14 @@ var autres_boutons = L.Control.extend({
 						annee_debut: annee,
 						annee_fin: max_annee
 					});
-
 					try {
 						figures = JSON.parse(figures);
 					}
-					catch (e) {
+					catch (error) {
 						console.log("Figures était deja parse, pas besoin de le refaire");
-						console.log(e);
 					}
-	
 					figures.features.push(nouvelle_forme);
+					figures = JSON.stringify(figures);
 					
 					prev.changement.push({id : id_max, prev : ""});
 					
@@ -505,7 +502,6 @@ var autres_boutons = L.Control.extend({
 		icone_redo.style.height = '30px';
 		
 		undoButton.addEventListener('click', function(e) {
-			
 			e.stopPropagation();
 			e.preventDefault();
 			
@@ -523,11 +519,9 @@ var autres_boutons = L.Control.extend({
 				try {
 					figures = JSON.parse(figures);
 				}
-				catch (e) {
+				catch (error) {
 					console.log("Figures était deja parse, pas besoin de le refaire");
-					console.log(e);
 				}
-				
 				for (i in elmt.changement)
 				{
 					var creation = true;
@@ -568,7 +562,7 @@ var autres_boutons = L.Control.extend({
 				}
 				
 				post_actions.push(post);
-				
+				figures = JSON.stringify(figures);
 				if ($("#bouton_latLng").text() == "-")
 				{
 					affichage_annees("latLng");
@@ -579,7 +573,6 @@ var autres_boutons = L.Control.extend({
 		});
 		
 		redoButton.addEventListener('click', function(e) {
-			
 			if (post_actions.length != 0)
 			{	
 				var elmt = post_actions.pop();
@@ -594,11 +587,9 @@ var autres_boutons = L.Control.extend({
 				try {
 					figures = JSON.parse(figures);
 				}
-				catch (e) {
+				catch (error) {
 					console.log("Figures était deja parse, pas besoin de le refaire");
-					console.log(e);
 				}
-				
 				for (i in elmt.changement)
 				{
 					var creation = true;
@@ -639,7 +630,7 @@ var autres_boutons = L.Control.extend({
 				}
 				
 				prev_actions.push(prev);
-				
+				figures = JSON.stringify(figures);
 				if ($("#bouton_latLng").text() == "-")
 				{
 					affichage_annees("latLng");
@@ -660,7 +651,6 @@ var autres_boutons = L.Control.extend({
 		icone_merge.style.height = '30px';
 		
 		mergeButton.addEventListener('click', function(e) {
-			
 			if (selection.length == 2)
 			{
 				var prev = {annee : annee, changement : []};
@@ -689,15 +679,12 @@ var autres_boutons = L.Control.extend({
 				try {
 					figures = JSON.parse(figures);
 				}
-				catch (e) {
+				catch (error) {
 					console.log("Figures était deja parse, pas besoin de le refaire");
-					console.log(e);
 				}
-
 				figures.features.push(union);
 				
 				caracs["latLng"][id_max] = [annee, annee_fin_union];
-				
 				
 				// on gère les changements pour poly1 et poly2
 				var id_poly1 = poly1.properties.id;
@@ -762,8 +749,7 @@ var autres_boutons = L.Control.extend({
 					index += 1;
 				}	
 				
-
-				
+				figures = JSON.stringify(figures);
 				if ($("#bouton_latLng").text() == "-")
 				{
 					affichage_annees("latLng");
@@ -942,7 +928,6 @@ $.post('../dialogue_BDD_site/recuperation_formes_un_element.php', { id_element:i
 				});
 			}
 		});
-
 		
 		// initialisation des couches geojson		
 		geoJSONlayer = new L.geoJSON('', {
@@ -1034,7 +1019,6 @@ $.post('../dialogue_BDD_site/recuperation_formes_un_element.php', { id_element:i
 					// on autorise la sélection d'éléments que si la palette de dessin est désactivée
 					if (!bool)
 					{
-						
 						if (e.originalEvent.shiftKey)
 						{
 							if (selection.indexOf(e.target) != -1)
@@ -1049,7 +1033,6 @@ $.post('../dialogue_BDD_site/recuperation_formes_un_element.php', { id_element:i
 								e.target.setStyle({color: "#FF0080"});
 							}
 						}
-						
 						else
 						{
 							for (i in selection)
@@ -1077,8 +1060,7 @@ $.post('../dialogue_BDD_site/recuperation_formes_un_element.php', { id_element:i
 						}
 					}
 				});
-				
-				},
+			},
 				
 			style: 
 				function(feature) {
@@ -1099,21 +1081,17 @@ $.post('../dialogue_BDD_site/recuperation_formes_un_element.php', { id_element:i
 		geoJSONlayer.pm.disable()
 
 		geoJSONlayer.on('pm:edit', function(e) {
-			
 			var prev = {annee : annee, changement : []};
 			
 			var modif = e.sourceTarget.toGeoJSON();
-			
 			var id_modifie = modif.properties.id;
 			
 			try {
 				figures = JSON.parse(figures);
 			}
-			catch (e) {
+			catch (error) {
 				console.log("Figures était deja parse, pas besoin de le refaire");
-				console.log(e);
 			}
-			
 			for (index in figures.features)
 			{
 				var id_feature = figures.features[index].properties.id;
@@ -1141,7 +1119,7 @@ $.post('../dialogue_BDD_site/recuperation_formes_un_element.php', { id_element:i
 						{
 							figures.features.splice(index, 1);
 						}
-						delete caracs["latLng"][id_feature];
+						delete caracs["latLng"][id_feature]; // on supprime un élément qui n'existe pas tjrs ?
 					}
 					
 					id_max += 1;
@@ -1156,16 +1134,16 @@ $.post('../dialogue_BDD_site/recuperation_formes_un_element.php', { id_element:i
 				}
 			}
 			
+			figures = JSON.stringify(figures);
 			if ($("#bouton_latLng").text() == "-")
 			{
 				affichage_annees("latLng");
 			}
 			
-			prev_actions.push(prev);
+			prev_actions.push(prev);// que deviens cette variable ?
 			
 			post_actions = [];
 		});
-		
 
 		affichage_figures_from_scratch();
 		
@@ -1229,7 +1207,6 @@ function repositionImage() {
 };
 
 map.on('pm:create', function(e) {
-	
 	var nouvelle_forme = e.layer.toGeoJSON();
 	
 	id_max += 1;
@@ -1242,20 +1219,19 @@ map.on('pm:create', function(e) {
 		annee_fin: max_annee
 	});
 	
-	try {
-		figures = JSON.parse(figures);
-	}
-	catch (e) {
-		console.log("Figures était deja parse, pas besoin de le refaire");
-		console.log(e);
-	}
-	
 	prev_actions.push({annee : annee, changement : [{id : id_max, prev : ""}]});
 	
 	post_actions = [];
 	
+	try {
+		figures = JSON.parse(figures);
+	}
+	catch (error) {
+		console.log("Figures était deja parse, pas besoin de le refaire");
+	}
 	figures.features.push(nouvelle_forme);
 
+	figures = JSON.stringify(figures);
 	caracs["latLng"][id_max] = [annee, max_annee];
 	
 	if ($("#bouton_latLng").text() == "-")
@@ -1271,7 +1247,6 @@ map.on('pm:create', function(e) {
 });
 
 map.on('pm:remove', function(e) {
-	
 	if (ecoute_remove)
 	{
 		var modif = e.layer.toGeoJSON();
@@ -1280,11 +1255,9 @@ map.on('pm:remove', function(e) {
 		try {
 			figures = JSON.parse(figures);
 		}
-		catch (e) {
+		catch (error) {
 			console.log("Figures était deja parse, pas besoin de le refaire");
-			console.log(e);
 		}
-		
 		for (index in figures.features)
 		{
 			var id_feature = figures.features[index].properties.id;
@@ -1319,6 +1292,7 @@ map.on('pm:remove', function(e) {
 			}
 		}
 		
+		figures = JSON.stringify(figures);
 		if ($("#bouton_latLng").text() == "-")
 		{
 			affichage_annees("latLng");
@@ -1339,7 +1313,6 @@ map.on('pm:remove', function(e) {
 });
 
 map.on('pm:cut', function(e) {
-
 	ecoute_remove = false;
 	map.removeLayer(e.cuttedLayer);
 	ecoute_remove = true;
@@ -1360,11 +1333,9 @@ map.on('pm:cut', function(e) {
 			try {
 				figures = JSON.parse(figures);
 			}
-			catch (e) {
+			catch (error) {
 				console.log("Figures était deja parse, pas besoin de le refaire");
-				console.log(e);
 			}
-			
 			for (index in figures.features)
 			{
 				var id_feature = figures.features[index].properties.id;
@@ -1430,6 +1401,7 @@ map.on('pm:cut', function(e) {
 				}
 			}
 			
+			figures = JSON.stringify(figures);
 			if ($("#bouton_latLng").text() == "-")
 			{
 				affichage_annees("latLng");
@@ -1498,7 +1470,7 @@ function mise_a_jour_carte()
 }
 
 function affichage_annees(key)
-{	
+{
 	tab_annees = [];
 
 	for (ix in caracs[key])
@@ -1679,7 +1651,7 @@ function enregistrement_caracteristiques()
 }
 
 function affichage_figures()
-{	
+{
 	ecoute_remove = false;
 	geoJSONlayer.clearLayers();
 	ecoute_remove = true;
@@ -1703,9 +1675,8 @@ function affichage_figures_from_scratch()
 	try {
 		figures = JSON.parse(figures);
 	}
-	catch (e) {
+	catch (error) {
 		console.log("Figures était deja parse, pas besoin de le refaire");
-		console.log(e);
 	}
 	var inter_gL = new L.geoJSON(figures, {
 		filter:
@@ -1713,9 +1684,8 @@ function affichage_figures_from_scratch()
 				return (feature.properties.statut <= 2) && (feature.properties.annee_debut <= annee) && (annee <= feature.properties.annee_fin);
 			}
 	});
-	
+	figures = JSON.stringify(figures);
 	inter_gL = inter_gL.toGeoJSON();
-
 	geoJSONlayer.addData(inter_gL);
 }
 
@@ -1768,17 +1738,15 @@ function envoi_forme()
 	{
 		enregistrement_caracteristiques();
 		delete caracs["latLng"];
-
-		if ( $("#html5colorpicker").length ) {
-			couleur = $("#html5colorpicker").val();
-		}
-		
 		try {
 			figures = JSON.parse(figures);
 		}
-		catch (e) {
+		catch (error) {
 			console.log("Figures était deja parse, pas besoin de le refaire");
-			console.log(e);
+		}
+
+		if ( $("#html5colorpicker").length ) {
+			couleur = $("#html5colorpicker").val();
 		}
 		
 		var bool = false;
@@ -1841,16 +1809,24 @@ function envoi_forme()
 			bool: bool
 		});
 
-		// Use $.ajax to send JSON data
-		$.ajax({
-			url: "../dialogue_BDD_site/traitement_formes_un_element.php",
-			type: "POST",
-			contentType: "application/json",
-			data: jsonData,
-			success: function(result) {
-				window.location.href = "../index.php";
-			}
-		});
+		try{
+			// Use $.ajax to send JSON data
+			$.ajax({
+				url: "../dialogue_BDD_site/traitement_formes_un_element.php",
+				type: "POST",
+				contentType: "application/json",
+				data: jsonData,
+				success: function(result) {
+					window.location.href = "../index.php";
+				}
+			});
+		}
+		catch (error)
+		{
+			console.log("Post method failed. Error : ");
+			console.log(error);
+			figures = JSON.stringify(figures);
+		}
 	}
 }
 
