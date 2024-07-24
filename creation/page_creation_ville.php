@@ -519,7 +519,7 @@ map.on('pm:create', function(e) {
 			}
 		}
 	}
-	figures = JSON.stringify(figures);
+	figures = JSON.stringify(figures); //IMPORTANT : Sans ça les fonctions leaflet de modification de figure créent de nouvelles formes quand on modifie une forme existante
 	id_max += 1;
 	
 	var nouvelle_forme = e.layer.toGeoJSON();
@@ -540,7 +540,7 @@ map.on('pm:create', function(e) {
 		console.log("JSON probably already parsed");
 	}
 	figures.features.push(nouvelle_forme);
-	figures = JSON.stringify(figures);
+	figures = JSON.stringify(figures); //IMPORTANT : Sans ça les fonctions leaflet de modification de figure créent de nouvelles formes quand on modifie une forme existante
 	
 	caracs["latLng"][id_max] = [annee, fin_marqueur];
 	if ($("#bouton_latLng").text() == "-")
@@ -606,7 +606,7 @@ map.on('pm:remove', function(e) {
 			affichage_annees("latLng");
 		}
 		
-		figures = JSON.stringify(figures);
+		figures = JSON.stringify(figures); //IMPORTANT : Sans ça les fonctions leaflet de modification de figure créent de nouvelles formes quand on modifie une forme existante
 		affichage_figures();
 	}
 });
@@ -862,13 +862,11 @@ function affichage_figures_from_scratch()
 				return (feature.properties.statut <= 2) && (feature.properties.annee_debut <= annee) && (annee <= feature.properties.annee_fin);
 			}
 	});
-	figures = JSON.stringify(figures);
+	figures = JSON.stringify(figures); //IMPORTANT : Sans ça les fonctions leaflet de modification de figure créent de nouvelles formes quand on modifie une forme existante
 	
 	geoJSONlayer.addTo(map);
 	
 	geoJSONlayer.on('pm:edit', function(e) {
-		console.log("figures pm:edit");
-		console.log(figures);
 		var modif = e.sourceTarget.toGeoJSON();
 		
 		var id_modifie = modif.properties.id;
@@ -920,7 +918,7 @@ function affichage_figures_from_scratch()
 			}
 		}
 		
-		figures = JSON.stringify(figures);
+		figures = JSON.stringify(figures); //IMPORTANT : Sans ça les fonctions leaflet de modification de figure créent de nouvelles formes quand on modifie une forme existante
 		if ($("#bouton_latLng").text() == "-")
 		{
 			affichage_annees("latLng");
@@ -1062,7 +1060,7 @@ function envoi_forme()
 		{
 			console.log("Post method failed. Error : ");
 			console.log(error);
-			figures = JSON.stringify(figures);
+			figures = JSON.stringify(figures); //IMPORTANT : Sans ça les fonctions leaflet de modification de figure créent de nouvelles formes quand on modifie une forme existante
 		}
 	}
 }

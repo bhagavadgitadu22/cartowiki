@@ -461,7 +461,7 @@ var autres_boutons = L.Control.extend({
 						console.log("Figures était deja parse, pas besoin de le refaire");
 					}
 					figures.features.push(nouvelle_forme);
-					figures = JSON.stringify(figures);
+					figures = JSON.stringify(figures); //IMPORTANT : Sans ça les fonctions leaflet de modification de figure créent de nouvelles formes quand on modifie une forme existante
 					
 					prev.changement.push({id : id_max, prev : ""});
 					
@@ -562,7 +562,7 @@ var autres_boutons = L.Control.extend({
 				}
 				
 				post_actions.push(post);
-				figures = JSON.stringify(figures);
+				figures = JSON.stringify(figures); //IMPORTANT : Sans ça les fonctions leaflet de modification de figure créent de nouvelles formes quand on modifie une forme existante
 				if ($("#bouton_latLng").text() == "-")
 				{
 					affichage_annees("latLng");
@@ -630,7 +630,7 @@ var autres_boutons = L.Control.extend({
 				}
 				
 				prev_actions.push(prev);
-				figures = JSON.stringify(figures);
+				figures = JSON.stringify(figures); //IMPORTANT : Sans ça les fonctions leaflet de modification de figure créent de nouvelles formes quand on modifie une forme existante
 				if ($("#bouton_latLng").text() == "-")
 				{
 					affichage_annees("latLng");
@@ -749,7 +749,7 @@ var autres_boutons = L.Control.extend({
 					index += 1;
 				}	
 				
-				figures = JSON.stringify(figures);
+				figures = JSON.stringify(figures); //IMPORTANT : Sans ça les fonctions leaflet de modification de figure créent de nouvelles formes quand on modifie une forme existante
 				if ($("#bouton_latLng").text() == "-")
 				{
 					affichage_annees("latLng");
@@ -1134,7 +1134,7 @@ $.post('../dialogue_BDD_site/recuperation_formes_un_element.php', { id_element:i
 				}
 			}
 			
-			figures = JSON.stringify(figures);
+			figures = JSON.stringify(figures); //IMPORTANT : Sans ça les fonctions leaflet de modification de figure créent de nouvelles formes quand on modifie une forme existante
 			if ($("#bouton_latLng").text() == "-")
 			{
 				affichage_annees("latLng");
@@ -1231,7 +1231,7 @@ map.on('pm:create', function(e) {
 	}
 	figures.features.push(nouvelle_forme);
 
-	figures = JSON.stringify(figures);
+	figures = JSON.stringify(figures); //IMPORTANT : Sans ça les fonctions leaflet de modification de figure créent de nouvelles formes quand on modifie une forme existante
 	caracs["latLng"][id_max] = [annee, max_annee];
 	
 	if ($("#bouton_latLng").text() == "-")
@@ -1292,7 +1292,7 @@ map.on('pm:remove', function(e) {
 			}
 		}
 		
-		figures = JSON.stringify(figures);
+		figures = JSON.stringify(figures); //IMPORTANT : Sans ça les fonctions leaflet de modification de figure créent de nouvelles formes quand on modifie une forme existante
 		if ($("#bouton_latLng").text() == "-")
 		{
 			affichage_annees("latLng");
@@ -1401,7 +1401,7 @@ map.on('pm:cut', function(e) {
 				}
 			}
 			
-			figures = JSON.stringify(figures);
+			figures = JSON.stringify(figures); //IMPORTANT : Sans ça les fonctions leaflet de modification de figure créent de nouvelles formes quand on modifie une forme existante
 			if ($("#bouton_latLng").text() == "-")
 			{
 				affichage_annees("latLng");
@@ -1684,7 +1684,7 @@ function affichage_figures_from_scratch()
 				return (feature.properties.statut <= 2) && (feature.properties.annee_debut <= annee) && (annee <= feature.properties.annee_fin);
 			}
 	});
-	figures = JSON.stringify(figures);
+	figures = JSON.stringify(figures); //IMPORTANT : Sans ça les fonctions leaflet de modification de figure créent de nouvelles formes quand on modifie une forme existante
 	inter_gL = inter_gL.toGeoJSON();
 	geoJSONlayer.addData(inter_gL);
 }
@@ -1825,7 +1825,7 @@ function envoi_forme()
 		{
 			console.log("Post method failed. Error : ");
 			console.log(error);
-			figures = JSON.stringify(figures);
+			figures = JSON.stringify(figures); //IMPORTANT : Sans ça les fonctions leaflet de modification de figure créent de nouvelles formes quand on modifie une forme existante
 		}
 	}
 }
