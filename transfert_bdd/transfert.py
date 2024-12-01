@@ -106,12 +106,33 @@ def sort_caracs(caracs):
         for id_elmt, elmt in elmts_carac.items():
             elmt.sort(key=lambda x: x[0])
 
+def connect_to_pgsql_database():
+    """Connect to the PostgreSQL database and return the connection object
+
+    Returns:
+        connection: can be used to interact with the database
+    """
+    try:
+        connection = psycopg2.connect(
+            host="your_host",
+            port="5432",
+            user="your_username",
+            password="your_password",
+            database="your_database"
+        )
+        return connection
+    except Exception as error:
+        print(f"Error connecting to database: {error}")
+        return None
+
 def main():
-    connection = connect_to_database()
-    if connection is None:
+    """Main function that calls all the other functions and fills the new database with the data from the old database
+    """
+    connection_old_database = connect_to_my_sql_database()
+    if connection_old_database is None:
         return
 
-    data = fetch_data(connection)
+    data = fetch_data_from_old_database(connection_old_database)
     geojson, caracs = generate_geojson_and_caracs(data)
     sort_caracs(caracs)
 
@@ -119,7 +140,15 @@ def main():
     print(';;;')
     print(json.dumps(caracs, ensure_ascii=False))
 
-    connection.close()
+    connection_old_database.close()
+
+    connection_new_database = connect_to_pgsql_database()
+    if connection_new_database is None:
+        return
+    
+
+    connection_new_database.close()
+
 
 if __name__ == "__main__":
     main()
