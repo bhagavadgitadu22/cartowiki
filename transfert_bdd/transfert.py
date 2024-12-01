@@ -1,26 +1,51 @@
+# Description: This script is used to transfer data from the old database to the new database
+
 import mysql.connector
 from mysql.connector import Error
+import psycopg2
 import json
 
-def connect_to_database():
+
+def connect_to_my_sql_database():
+    """Connect to the MySQL database and return the connection object
+
+    Returns:
+        connection: can be used to interact with the database
+    """
     try:
-        connection = mysql.connector.connect(
+        my_sql_connection = mysql.connector.connect(
             host='localhost',
             user='root',
             password='',
             database='base_cartowiki'
         )
-        return connection
+        return my_sql_connection
     except mysql.connector.Error as err:
         print(f"Error: {err}")
         return None
 
-def fetch_data(connection):
-    cursor = connection.cursor(dictionary=True)
+def fetch_data_from_old_database(connection_old_database):
+    """Gets all the data from the old database
+
+    Args:
+        connection_old_database (connection): can be used to interact with the database
+
+    Returns:
+        Rows of a table: All the data from the old database
+    """
+    cursor = connection_old_database.cursor(dictionary=True)
     cursor.execute('SELECT * FROM formes JOIN elements ON formes.id_element = elements.id')
     return cursor.fetchall()
 
 def generate_geojson_and_caracs(data):
+    """Generates the geojson and caracs from the data
+
+    Args:
+        data (Rows of a table): Data from the old database
+
+    Returns:
+        (geosson,caracs): (List of geometries, List of characteristics(population, population_etat, nom, wikipedia, capitale, nomade, source, latLng))
+    """
     geojson = {
         "type": "FeatureCollection",
         "features": []
@@ -69,6 +94,11 @@ def generate_geojson_and_caracs(data):
     return geojson, caracs
 
 def sort_caracs(caracs):
+    """It is supposed to sort the cararcs but I don't know how and if it works
+
+    Args:
+        caracs (List of characteristics): (population, population_etat, nom, wikipedia, capitale, nomade, source, latLng)
+    """
     def cmp(a, b):
         return (a > b) - (a < b)
 
