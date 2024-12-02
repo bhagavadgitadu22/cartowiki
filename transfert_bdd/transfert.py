@@ -64,7 +64,7 @@ def fetch_data_from_old_database(connection_old_database):
     entites_pays = cursor.fetchall()
 
     #Fetch entite ville
-    cursor.execute('SELECT formes.id_element ,formes.valeur FROM elements JOIN formes ON formes.id_element = elements.id WHERE type = "ville"')
+    cursor.execute('SELECT formes.id_element ,formes.valeur FROM elements JOIN formes ON formes.id_element = elements.id WHERE champ = "geometry" ADN type = "ville"')
     entites_villes = cursor.fetchall()
 
     #Fetch geometrie pays
@@ -76,9 +76,9 @@ def fetch_data_from_old_database(connection_old_database):
     population_pays = cursor.fetchall()
 
     #Fetch existence ville
-    cursor.execute('SELECT formes.valeur, formes.annee_debut, formes.annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "geometry" AND elements.type = "ville"')
+    cursor.execute('SELECT formes.id_element, formes.annee_debut, formes.annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "geometry" AND elements.type = "ville"')
     existence_villes = cursor.fetchall()
-    #il faudra trier pour savoir qd la ville existe et qd elle n'existe pas
+    #On a besoin que des dates des geometries pour savoir à quelles dates les villes existent. Leur géométrie est déjà dans la table entites_villes
 
     #Fetch population ville
     cursor.execute('SELECT formes.id_element, formes.valeur, formes.annee_debut, formes.annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "population" AND elements.type = "ville"')
