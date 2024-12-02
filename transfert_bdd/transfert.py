@@ -5,6 +5,20 @@ from mysql.connector import Error
 import psycopg2
 import json
 
+#Variables globales
+# connection_old_database = None
+# connection_new_database = None
+noms_pays = []
+noms_villes = []
+entites_pays = []
+entites_villes = []
+geometrie_pays = []
+population_pays = []
+existence_villes = []
+population_villes = []
+sources_pays = []
+sources_villes = []
+est_capitale = []
 
 def connect_to_my_sql_database():
     """Connect to the MySQL database and return the connection object
@@ -33,7 +47,56 @@ def fetch_data_from_old_database(connection_old_database):
     Returns:
         Rows of a table: All the data from the old database
     """
+
+    global noms_pays, noms_villes, geometrie_pays, population_pays, existence_villes, population_villes, sources_pays, sources_villes, est_capitale, entites_pays, entites_villes
+
     cursor = connection_old_database.cursor(dictionary=True)
+    #Fetch nom pays
+    cursor.execute('SELECT id_element, valeur, annee_debut, annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "nom" AND elements.type = "pays"')
+    noms_pays = cursor.fetchall()
+
+    #Fetch nom ville
+    cursor.execute('SELECT id_element, valeur, annee_debut, annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "nom" AND elements.type = "ville"')
+    noms_villes = cursor.fetchall()
+
+    #Fetch entite pays
+    cursor.execute('SELECT id,couleur FROM elements WHERE type = "pays"')
+    entites_pays = cursor.fetchall()
+
+    #Fetch entite ville
+    cursor.execute('SELECT formes.id_element ,formes.valeur FROM elements JOIN formes ON formes.id_element = elements.id WHERE type = "ville"')
+    entites_villes = cursor.fetchall()
+
+    #Fetch geometrie pays
+    cursor.execute('SELECT formes.id_element, formes.valeur, formes.annee_debut, formes.annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "geometry" AND elements.type = "pays"')
+    geometrie_pays = cursor.fetchall()
+
+    #Fetch population pays
+    cursor.execute('SELECT formes.id_element, formes.valeur, formes.annee_debut, formes.annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "population_etat" AND elements.type = "pays"')
+    population_pays = cursor.fetchall()
+
+    #Fetch existence ville
+    cursor.execute('SELECT formes.valeur, formes.annee_debut, formes.annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "geometry" AND elements.type = "ville"')
+    existence_villes = cursor.fetchall()
+    #il faudra trier pour savoir qd la ville existe et qd elle n'existe pas
+
+    #Fetch population ville
+    cursor.execute('SELECT formes.id_element, formes.valeur, formes.annee_debut, formes.annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "population" AND elements.type = "ville"')
+    population_villes = cursor.fetchall()
+
+    #Fetch sources pays
+    cursor.execute('SELECT formes.id_element, formes.valeur, formes.annee_debut, formes.annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "source" AND elements.type = "pays"')
+    sources_pays = cursor.fetchall()
+
+    #Fetch sources ville
+    cursor.execute('SELECT formes.id_element, formes.valeur, formes.annee_debut, formes.annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "source" AND elements.type = "ville"')
+    sources_villes = cursor.fetchall()
+
+    #Fetch est_capitale
+    cursor.execute('SELECT formes.id_element, formes.valeur, formes.annee_debut, formes.annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "capitale" AND elements.type = "ville"')
+    est_capitale = cursor.fetchall()
+
+    #Fetch all data
     cursor.execute('SELECT * FROM formes JOIN elements ON formes.id_element = elements.id')
     return cursor.fetchall()
 
@@ -99,9 +162,6 @@ def sort_caracs(caracs):
     Args:
         caracs (List of characteristics): (population, population_etat, nom, wikipedia, capitale, nomade, source, latLng)
     """
-    def cmp(a, b):
-        return (a > b) - (a < b)
-
     for key_carac, elmts_carac in caracs.items():
         for id_elmt, elmt in elmts_carac.items():
             elmt.sort(key=lambda x: x[0])
@@ -114,16 +174,34 @@ def connect_to_pgsql_database():
     """
     try:
         connection = psycopg2.connect(
-            host="your_host",
+            host="localhost",
             port="5432",
-            user="your_username",
-            password="your_password",
-            database="your_database"
+            user="Superuser",
+            password="password",
+            database="CartoWiki"
         )
         return connection
     except Exception as error:
         print(f"Error connecting to database: {error}")
         return None
+
+def insert_data_into_new_database(connection_new_database, geojson, caracs):
+    """Inserts data into the new PostgreSQL database"""
+    cursor = connection_new_database.cursor()
+    for row in caracs["population"]:
+        cursor.execute("""
+            INSERT INTO public.population (id_element, annee_debut, annee_fin, population)
+            VALUES (%s, %s, %s, %s)
+        """, (row["id_element"], row["annee_debut"], row["annee_fin"], row["population"]))
+        # Insert data into the appropriate tables
+
+        # cursor.execute("""
+        #     INSERT INTO public.utilisateurs (pseudo, mail, mdp_hash, niveau_admin, crc_utilisateurs)
+        #     VALUES (%s, %s, %s, %s, %s)
+        # """, (row['pseudo'], row['mail'], row['mdp_hash'], row['niveau_admin'], row['crc_utilisateurs']))
+        # Add more insert statements for other tables as needed
+    connection_new_database.commit()
+
 
 def main():
     """Main function that calls all the other functions and fills the new database with the data from the old database
@@ -133,12 +211,37 @@ def main():
         return
 
     data = fetch_data_from_old_database(connection_old_database)
+    print('noms_pays')
+    print(noms_pays)
+    print('noms_villes')
+    print(noms_villes)
+    print('entites_pays')
+    print(entites_pays)
+    print('entites_villes')
+    print(entites_villes)
+    print('geometrie_pays')
+    print(geometrie_pays)
+    print('existence_villes')
+    print(existence_villes)
+    print('population_pays')
+    print(population_pays)
+    print('population_villes')
+    print(population_villes)
+    print('sources_pays')
+    print(sources_pays)
+    print('sources_villes')
+    print(sources_villes)
+    print('est_capitale')
+    print(est_capitale)
+    print('data')
+    print(data)
+
     geojson, caracs = generate_geojson_and_caracs(data)
     sort_caracs(caracs)
 
-    print(json.dumps(geojson, ensure_ascii=False))
-    print(';;;')
-    print(json.dumps(caracs, ensure_ascii=False))
+    # print(json.dumps(geojson, ensure_ascii=False))
+    # print(';;;')
+    # print(json.dumps(caracs, ensure_ascii=False))
 
     connection_old_database.close()
 
@@ -146,6 +249,7 @@ def main():
     if connection_new_database is None:
         return
     
+    insert_data_into_new_database(connection_new_database, geojson, caracs)
 
     connection_new_database.close()
 
