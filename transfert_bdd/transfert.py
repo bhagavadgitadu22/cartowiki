@@ -64,7 +64,7 @@ def fetch_data_from_old_database(connection_old_database):
     entites_pays = cursor.fetchall()
 
     #Fetch entite ville
-    cursor.execute('SELECT formes.id_element ,formes.valeur FROM elements JOIN formes ON formes.id_element = elements.id WHERE champ = "geometry" ADN type = "ville"')
+    cursor.execute('SELECT formes.id_element ,formes.valeur FROM elements JOIN formes ON formes.id_element = elements.id WHERE champ = "geometry" AND type = "ville"')
     entites_villes = cursor.fetchall()
 
     #Fetch geometrie pays
@@ -188,18 +188,39 @@ def connect_to_pgsql_database():
 def insert_data_into_new_database(connection_new_database, geojson, caracs):
     """Inserts data into the new PostgreSQL database"""
     cursor = connection_new_database.cursor()
-    for row in caracs["population"]:
-        cursor.execute("""
-            INSERT INTO public.population (id_element, annee_debut, annee_fin, population)
-            VALUES (%s, %s, %s, %s)
-        """, (row["id_element"], row["annee_debut"], row["annee_fin"], row["population"]))
-        # Insert data into the appropriate tables
+    timer = 0
+    for row in noms_pays:
+        timer += 1
+        if timer % 100 == 0:
+            print(timer)
 
-        # cursor.execute("""
-        #     INSERT INTO public.utilisateurs (pseudo, mail, mdp_hash, niveau_admin, crc_utilisateurs)
-        #     VALUES (%s, %s, %s, %s, %s)
-        # """, (row['pseudo'], row['mail'], row['mdp_hash'], row['niveau_admin'], row['crc_utilisateurs']))
-        # Add more insert statements for other tables as needed
+        cursor.execute("""
+        INSERT INTO public.noms_pays (nom_pays) VALUES("{0}")
+        """.format(row["valeur"]))
+    
+    timer = 0
+    for row in noms_villes:
+        timer += 1
+        if timer % 100 == 0:
+            print(timer)
+
+        cursor.execute("""
+            INSERT INTO public.noms_villes (nom_ville)
+            VALUES (%s)
+        """, (row["valeur"]))
+
+    # for row in caracs["population"]:
+    #     cursor.execute("""
+    #         INSERT INTO public.population (id_element, annee_debut, annee_fin, population)
+    #         VALUES (%s, %s, %s, %s)
+    #     """, (row["id_element"], row["annee_debut"], row["annee_fin"], row["population"]))
+    #     # Insert data into the appropriate tables
+
+    #     # cursor.execute("""
+    #     #     INSERT INTO public.utilisateurs (pseudo, mail, mdp_hash, niveau_admin, crc_utilisateurs)
+    #     #     VALUES (%s, %s, %s, %s, %s)
+    #     # """, (row['pseudo'], row['mail'], row['mdp_hash'], row['niveau_admin'], row['crc_utilisateurs']))
+    #     # Add more insert statements for other tables as needed
     connection_new_database.commit()
 
 
@@ -211,30 +232,30 @@ def main():
         return
 
     data = fetch_data_from_old_database(connection_old_database)
-    print('noms_pays')
-    print(noms_pays)
-    print('noms_villes')
-    print(noms_villes)
-    print('entites_pays')
-    print(entites_pays)
-    print('entites_villes')
-    print(entites_villes)
-    print('geometrie_pays')
-    print(geometrie_pays)
-    print('existence_villes')
-    print(existence_villes)
-    print('population_pays')
-    print(population_pays)
-    print('population_villes')
-    print(population_villes)
-    print('sources_pays')
-    print(sources_pays)
-    print('sources_villes')
-    print(sources_villes)
-    print('est_capitale')
-    print(est_capitale)
-    print('data')
-    print(data)
+    # print('noms_pays')
+    # print(noms_pays)
+    # print('noms_villes')
+    # print(noms_villes)
+    # print('entites_pays')
+    # print(entites_pays)
+    # print('entites_villes')
+    # print(entites_villes)
+    # print('geometrie_pays')
+    # print(geometrie_pays)
+    # print('existence_villes')
+    # print(existence_villes)
+    # print('population_pays')
+    # print(population_pays)
+    # print('population_villes')
+    # print(population_villes)
+    # print('sources_pays')
+    # print(sources_pays)
+    # print('sources_villes')
+    # print(sources_villes)
+    # print('est_capitale')
+    # print(est_capitale)
+    # print('data')
+    # print(data)
 
     geojson, caracs = generate_geojson_and_caracs(data)
     sort_caracs(caracs)
