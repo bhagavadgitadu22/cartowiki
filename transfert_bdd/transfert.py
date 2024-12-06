@@ -188,6 +188,7 @@ def connect_to_pgsql_database():
 def insert_data_into_new_database(connection_new_database, geojson, caracs):
     """Inserts data into the new PostgreSQL database"""
     cursor = connection_new_database.cursor()
+
     # # Batch insert for noms_pays
     # noms_pays_values = [(row["valeur"],) for row in noms_pays]
     # cursor.executemany("INSERT INTO public.noms_pays (nom_pays) VALUES (%s)", noms_pays_values)
@@ -201,9 +202,8 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     # """, noms_villes_values)
     # print(f"Inserted {len(noms_villes_values)} rows into noms_villes")
 
-    # Batch insert for entites_pays
+    # # Batch insert for entites_pays
     # entites_pays_values = [(row["id"], row["couleur"],) for row in entites_pays]
-    # print(entites_pays_values)
     # cursor.executemany("""
     #     INSERT INTO public.entite_pays (id_entite_pays, couleur)
     #     VALUES (%s, %s)
@@ -220,11 +220,18 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
 
     # Batch insert for entites_villes
     # https://gis.stackexchange.com/questions/108533/insert-a-point-into-postgis-using-python
-    entites_villes_values = [(row["id_element"], row["valeur"].replace('"geometry": ', ""),0,) for row in entites_villes]
+    entites_villes_values = [(row["id_element"], row["valeur"].replace('"geometry": ', ""),) for row in entites_villes]
+    for i in range(len(entites_villes_values)):
+        if (entites_villes_values[i][1] == 'null'):
+            print("null : " + entites_villes_values[i])
+        if (entites_villes_values[i][0] == 24):
+            print("24 : " + entites_villes_values[i][1])
+        # entites_villes_values[i] = (entites_villes_values[i][0], json.dumps(entites_villes_values[i][1]))
+
     # print(entites_villes_values)
     cursor.executemany("""
-        INSERT INTO public.entites_villes (id_entite_ville, position_ville, crc_entites_villes)
-        VALUES (%s, ST_GeomFromGeoJSON(%s), %s)
+        INSERT INTO public.entites_villes (id_entite_ville, position_ville)
+        VALUES (%s, ST_GeomFromGeoJSON(%s))
     """, entites_villes_values)
     print(f"Inserted {len(entites_villes_values)} rows into entites_villes")
 
