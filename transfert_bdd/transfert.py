@@ -64,36 +64,36 @@ def fetch_data_from_old_database(connection_old_database):
     entites_pays = cursor.fetchall()
 
     #Fetch entite ville
-    cursor.execute('SELECT formes.id_element ,formes.valeur FROM elements JOIN formes ON formes.id_element = elements.id WHERE champ = "geometry" AND type = "ville"')
+    cursor.execute('SELECT id_element ,valeur FROM elements JOIN formes ON formes.id_element = elements.id WHERE champ = "geometry" AND type = "ville"')
     entites_villes = cursor.fetchall()
 
     #Fetch geometrie pays
-    cursor.execute('SELECT formes.id_element, formes.valeur, formes.annee_debut, formes.annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "geometry" AND elements.type = "pays"')
+    cursor.execute('SELECT id_element, valeur, annee_debut, annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "geometry" AND elements.type = "pays"')
     geometrie_pays = cursor.fetchall()
 
     #Fetch population pays
-    cursor.execute('SELECT formes.id_element, formes.valeur, formes.annee_debut, formes.annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "population_etat" AND elements.type = "pays"')
+    cursor.execute('SELECT id_element, valeur, annee_debut, annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "population_etat" AND elements.type = "pays"')
     population_pays = cursor.fetchall()
 
     #Fetch existence ville
-    cursor.execute('SELECT formes.id_element, formes.annee_debut, formes.annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "geometry" AND elements.type = "ville"')
+    cursor.execute('SELECT id_element, annee_debut, annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "geometry" AND elements.type = "ville"')
     existence_villes = cursor.fetchall()
     #On a besoin que des dates des geometries pour savoir à quelles dates les villes existent. Leur géométrie est déjà dans la table entites_villes
 
     #Fetch population ville
-    cursor.execute('SELECT formes.id_element, formes.valeur, formes.annee_debut, formes.annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "population" AND elements.type = "ville"')
+    cursor.execute('SELECT id_element, valeur, annee_debut, annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "population" AND elements.type = "ville"')
     population_villes = cursor.fetchall()
 
     #Fetch sources pays
-    cursor.execute('SELECT formes.id_element, formes.valeur, formes.annee_debut, formes.annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "source" AND elements.type = "pays"')
+    cursor.execute('SELECT id_element, valeur, annee_debut, annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "source" AND elements.type = "pays"')
     sources_pays = cursor.fetchall()
 
     #Fetch sources ville
-    cursor.execute('SELECT formes.id_element, formes.valeur, formes.annee_debut, formes.annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "source" AND elements.type = "ville"')
+    cursor.execute('SELECT id_element, valeur, annee_debut, annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "source" AND elements.type = "ville"')
     sources_villes = cursor.fetchall()
 
     #Fetch est_capitale
-    cursor.execute('SELECT formes.id_element, formes.valeur, formes.annee_debut, formes.annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "capitale" AND elements.type = "ville"')
+    cursor.execute('SELECT id_element, valeur, annee_debut, annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "capitale" AND elements.type = "ville"')
     est_capitale = cursor.fetchall()
 
     #Fetch all data
@@ -188,26 +188,46 @@ def connect_to_pgsql_database():
 def insert_data_into_new_database(connection_new_database, geojson, caracs):
     """Inserts data into the new PostgreSQL database"""
     cursor = connection_new_database.cursor()
-    timer = 0
-    for row in noms_pays:
-        timer += 1
-        if timer % 100 == 0:
-            print(timer)
-
-        cursor.execute("""
-        INSERT INTO public.noms_pays (nom_pays) VALUES("{0}")
-        """.format(row["valeur"]))
+    # # Batch insert for noms_pays
+    # noms_pays_values = [(row["valeur"],) for row in noms_pays]
+    # cursor.executemany("INSERT INTO public.noms_pays (nom_pays) VALUES (%s)", noms_pays_values)
+    # print(f"Inserted {len(noms_pays_values)} rows into noms_pays")
     
-    timer = 0
-    for row in noms_villes:
-        timer += 1
-        if timer % 100 == 0:
-            print(timer)
+    # # Batch insert for noms_villes
+    # noms_villes_values = [(row["valeur"],) for row in noms_villes]
+    # cursor.executemany("""
+    #     INSERT INTO public.noms_villes (nom_ville)
+    #     VALUES (%s)
+    # """, noms_villes_values)
+    # print(f"Inserted {len(noms_villes_values)} rows into noms_villes")
 
-        cursor.execute("""
-            INSERT INTO public.noms_villes (nom_ville)
-            VALUES (%s)
-        """, (row["valeur"]))
+    # Batch insert for entites_pays
+    # entites_pays_values = [(row["id"], row["couleur"],) for row in entites_pays]
+    # print(entites_pays_values)
+    # cursor.executemany("""
+    #     INSERT INTO public.entite_pays (id_entite_pays, couleur)
+    #     VALUES (%s, %s)
+    # """, entites_pays_values)
+    # print(f"Inserted {len(entites_pays_values)} rows into entites_pays")
+
+    # # Batch insert for entites_pays without colors //TODO: Add colors
+    # entites_pays_values = [(row["id"],1) for row in entites_pays]
+    # cursor.executemany("""
+    #     INSERT INTO public.entite_pays (id_entite_pays, couleur)
+    #     VALUES (%s, %s)
+    # """, entites_pays_values)
+    # print(f"Inserted {len(entites_pays_values)} rows into entites_pays")
+
+    # Batch insert for entites_villes
+    # https://gis.stackexchange.com/questions/108533/insert-a-point-into-postgis-using-python
+    entites_villes_values = [(row["id_element"], row["valeur"].replace('"geometry": ', ""),0,) for row in entites_villes]
+    # print(entites_villes_values)
+    cursor.executemany("""
+        INSERT INTO public.entites_villes (id_entite_ville, position_ville, crc_entites_villes)
+        VALUES (%s, ST_GeomFromGeoJSON(%s), %s)
+    """, entites_villes_values)
+    print(f"Inserted {len(entites_villes_values)} rows into entites_villes")
+
 
     # for row in caracs["population"]:
     #     cursor.execute("""
@@ -269,10 +289,10 @@ def main():
     connection_new_database = connect_to_pgsql_database()
     if connection_new_database is None:
         return
-    
-    insert_data_into_new_database(connection_new_database, geojson, caracs)
-
-    connection_new_database.close()
+    try:
+        insert_data_into_new_database(connection_new_database, geojson, caracs)
+    finally:
+        connection_new_database.close()
 
 
 if __name__ == "__main__":
