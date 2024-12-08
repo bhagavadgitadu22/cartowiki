@@ -64,7 +64,7 @@ def fetch_data_from_old_database(connection_old_database):
     entites_pays = cursor.fetchall()
 
     #Fetch entite ville
-    cursor.execute('SELECT id_element ,valeur FROM elements JOIN formes ON formes.id_element = elements.id WHERE champ = "geometry" AND type = "ville"')
+    cursor.execute('SELECT id_element ,valeur, annee_debut FROM elements JOIN formes ON formes.id_element = elements.id WHERE champ = "geometry" AND type = "ville"')
     entites_villes = cursor.fetchall()
 
     #Fetch geometrie pays
@@ -220,34 +220,110 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
 
     # Batch insert for entites_villes
     # https://gis.stackexchange.com/questions/108533/insert-a-point-into-postgis-using-python
-    entites_villes_values = [(row["id_element"], row["valeur"].replace('"geometry": ', ""),) for row in entites_villes]
-    for i in range(len(entites_villes_values)):
-        if (entites_villes_values[i][1] == 'null'):
-            print("null : " + entites_villes_values[i])
-        if (entites_villes_values[i][0] == 24):
-            print("24 : " + entites_villes_values[i][1])
-        # entites_villes_values[i] = (entites_villes_values[i][0], json.dumps(entites_villes_values[i][1]))
+    for i in range(len(entites_villes)-1, -1, -1):
+        if (entites_villes[i]["valeur"] == 'null'):
+            print("null : " + entites_villes[i])
+        if (entites_villes[i]["id_element"] == 24):
+            print(entites_villes[i]["id_element"])
+            # S'il s'agit de la position après l'an 0 de la ville 24, on la supprime de la liste
+            if (entites_villes[i]["annee_debut"]==0):
+                print(entites_villes[i])
+                del entites_villes[i]
+                print("24 deleted")
+                print(entites_villes[i])
+        if (entites_villes[i]["id_element"] == 32):
+            print(entites_villes[i]["id_element"])
+            if (entites_villes[i]["annee_debut"]==800):
+                print(entites_villes[i])
+                del entites_villes[i]
+                print("32 deleted")
+                print(entites_villes[i])
+        if (entites_villes[i]["id_element"] == 196):
+            print(entites_villes[i]["id_element"])
+            if (entites_villes[i]["annee_debut"]==-400):
+                print(entites_villes[i])
+                del entites_villes[i]
+                print("196 deleted")
+                print(entites_villes[i])
+        if (entites_villes[i]["id_element"] == 310):
+            print(entites_villes[i]["id_element"])
+            if (entites_villes[i]["annee_debut"]==-29):
+                print(entites_villes[i])
+                del entites_villes[i]
+                print("310 deleted")
+                print(entites_villes[i])
+        if (entites_villes[i]["id_element"] == 546):
+            print(entites_villes[i]["id_element"])
+            if (entites_villes[i]["annee_debut"]==1836):
+                print(entites_villes[i])
+                del entites_villes[i]
+                print("546 deleted")
+                print(entites_villes[i])
+        if (entites_villes[i]["id_element"] == 646):
+            print(entites_villes[i]["id_element"])
+            if (entites_villes[i]["annee_debut"]==44):
+                print(entites_villes[i])
+                del entites_villes[i]
+                print("646 deleted")
+                print(entites_villes[i])
+    # entites_villes_values = [(row["id_element"], row["valeur"].replace('"geometry": ', ""),) for row in entites_villes]
+    
+    # cursor.executemany("""
+    #     INSERT INTO public.entites_villes (id_entite_ville, position_ville)
+    #     VALUES (%s, ST_GeomFromGeoJSON(%s))
+    # """, entites_villes_values)
+    # print(f"Inserted {len(entites_villes_values)} rows into entites_villes")
 
-    # print(entites_villes_values)
+    # # Batch insert for geometrie_pays
+    # geometrie_pays_values = [(row["id_element"] ,row["annee_debut"] ,row["annee_debut"] , row["valeur"],) for row in geometrie_pays]
+    # cursor.executemany("""
+    #     INSERT INTO public.geometrie_pays (id_entite_pays, date_debut, date_fin, geometry)
+    #     VALUES (%s, %s, %s, ST_GeomFromGeoJSON(%s))
+    # """, geometrie_pays_values)
+    # print(f"Inserted {len(geometrie_pays_values)} rows into geometrie_pays")
+
+    # # Batch insert for population_pays
+    # population_pays_values = [(row["id_element"], row["annee_debut"], row["annee_fin"], row["valeur"],) for row in population_pays]
+    # cursor.executemany("""
+    #     INSERT INTO public.population_pays (id_entite_pays, date_debut, date_fin, population)
+    #     VALUES (%s, %s, %s, %s)
+    # """, population_pays_values)
+    # print(f"Inserted {len(population_pays_values)} rows into population_pays")
+
+    # # Batch insert for existence_villes
+    # existence_villes_values = [(row["id_element"], row["annee_debut"], row["annee_fin"],) for row in existence_villes]
+    # cursor.executemany("""
+    #     INSERT INTO public.existence_villes (id_entite_ville, date_debut, date_fin)
+    #     VALUES (%s, %s, %s)
+    # """, existence_villes_values)
+    # print(f"Inserted {len(existence_villes_values)} rows into existence_villes")
+    
+    # # Batch insert for population_villes
+    # population_villes_values = [(row["id_element"], row["annee_debut"], row["annee_fin"], row["valeur"],) for row in population_villes]
+    # cursor.executemany("""
+    #     INSERT INTO public.population_villes (id_entite_ville, date_debut, date_fin, population)
+    #     VALUES (%s, %s, %s, %s)
+    # """, population_villes_values)
+    # print(f"Inserted {len(population_villes_values)} rows into population_villes")
+    
+    # # Batch insert for pays
+    # pays_values = [(row["id_element"], row["annee_debut"], row["annee_fin"] ) for row in noms_pays]
+    # cursor.executemany("""
+    #     INSERT INTO public.pays (id_entite_pays, date_debut, date_fin)
+    #     VALUES (%s, %s, %s)
+    # """, pays_values)
+    # print(f"Inserted {len(pays_values)} rows into pays")
+
+    # Batch update for sources_pays
+    sources_pays_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in sources_pays]
     cursor.executemany("""
-        INSERT INTO public.entites_villes (id_entite_ville, position_ville)
-        VALUES (%s, ST_GeomFromGeoJSON(%s))
-    """, entites_villes_values)
-    print(f"Inserted {len(entites_villes_values)} rows into entites_villes")
+        UPDATE public.pays 
+        SET source = "(SELECT source FROM public.pays WHERE id_entite_pays = %s AND ((date_debut <= %s AND date_fin >= %s) OR (date_debut <= %s AND date_fin >= %s)))" + "/n" + %s
+        WHERE id_entite_pays = %s AND ((date_debut <= %s AND date_fin >= %s) OR (date_debut <= %s AND date_fin >= %s))
+    """, sources_pays_values)
+    print(f"Inserted {len(sources_pays_values)} rows into sources_pays")
 
 
-    # for row in caracs["population"]:
-    #     cursor.execute("""
-    #         INSERT INTO public.population (id_element, annee_debut, annee_fin, population)
-    #         VALUES (%s, %s, %s, %s)
-    #     """, (row["id_element"], row["annee_debut"], row["annee_fin"], row["population"]))
-    #     # Insert data into the appropriate tables
-
-    #     # cursor.execute("""
-    #     #     INSERT INTO public.utilisateurs (pseudo, mail, mdp_hash, niveau_admin, crc_utilisateurs)
-    #     #     VALUES (%s, %s, %s, %s, %s)
-    #     # """, (row['pseudo'], row['mail'], row['mdp_hash'], row['niveau_admin'], row['crc_utilisateurs']))
-    #     # Add more insert statements for other tables as needed
     connection_new_database.commit()
 
 
