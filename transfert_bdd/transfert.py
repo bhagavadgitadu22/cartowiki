@@ -318,8 +318,8 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     sources_pays_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in sources_pays]
     cursor.executemany("""
         UPDATE public.pays 
-        SET source = "(SELECT source FROM public.pays WHERE id_entite_pays = %s AND ((date_debut <= %s AND date_fin >= %s) OR (date_debut <= %s AND date_fin >= %s)))" + "/n" + %s
-        WHERE id_entite_pays = %s AND ((date_debut <= %s AND date_fin >= %s) OR (date_debut <= %s AND date_fin >= %s))
+        SET source = "(SELECT source FROM public.pays WHERE id_entite_pays = %s AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s) OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s)))" + "/n" + %s
+        WHERE id_entite_pays = %s AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s) OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s))
     """, sources_pays_values)
     print(f"Inserted {len(sources_pays_values)} rows into sources_pays")
 
