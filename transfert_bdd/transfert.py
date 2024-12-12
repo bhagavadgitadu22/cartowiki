@@ -323,6 +323,14 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     """, sources_pays_values)
     print(f"Inserted {len(sources_pays_values)} rows into sources_pays")
 
+    # # Batch insert for villes
+    # villes_values = [(row["id_element"], row["annee_debut"], row["annee_fin"] ) for row in noms_villes]
+    # cursor.executemany("""
+    #     INSERT INTO public.villes (id_entite_ville, date_debut, date_fin)
+    #     VALUES (%s, %s, %s)
+    # """, villes_values)
+    # print(f"Inserted {len(villes_values)} rows into villes")
+
 
     connection_new_database.commit()
 
@@ -335,30 +343,6 @@ def main():
         return
 
     data = fetch_data_from_old_database(connection_old_database)
-    # print('noms_pays')
-    # print(noms_pays)
-    # print('noms_villes')
-    # print(noms_villes)
-    # print('entites_pays')
-    # print(entites_pays)
-    # print('entites_villes')
-    # print(entites_villes)
-    # print('geometrie_pays')
-    # print(geometrie_pays)
-    # print('existence_villes')
-    # print(existence_villes)
-    # print('population_pays')
-    # print(population_pays)
-    # print('population_villes')
-    # print(population_villes)
-    # print('sources_pays')
-    # print(sources_pays)
-    # print('sources_villes')
-    # print(sources_villes)
-    # print('est_capitale')
-    # print(est_capitale)
-    # print('data')
-    # print(data)
 
     geojson, caracs = generate_geojson_and_caracs(data)
     sort_caracs(caracs)
