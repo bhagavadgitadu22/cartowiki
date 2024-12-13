@@ -448,16 +448,17 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     #     WHERE ST_CONTAINS(public.geometrie_pays.geometry, public.entites_villes.position_ville) AND (CAST(geometrie_pays.date_debut AS int)<=CAST(existence_ville.date_fin AS int) AND CAST(geometrie_pays.date_fin AS int)>=CAST(existence_ville.date_debut AS int))
     # ''')
 
-    # # Batch insert for est_capitale
-    # est_capitale_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in est_capitale]
+    # Batch insert for est_capitale
     # I will do a loop on the table pays_ville
     # I will insert into the table capitales the cities that are capitals with the dates of the capitals
     # The dates will need to be contained in the dates of the cities
-    # cursor.executemany("""
-    #     INSERT INTO public.capitales (id_pays_ville, date_debut, date_fin)
-    #     VALUES (%s, %s, %s)
-    # """, est_capitale_values)
-    # print(f"Inserted {len(est_capitale_values)} rows into capitales")
+    est_capitale_values = [(row["annee_debut"], row["annee_fin"], row["id_element"], row["annee_debut"], row["annee_fin"],) for row in est_capitale]
+    cursor.executemany("""
+        INSERT INTO public.capitales (id_pays_ville, date_debut, date_fin)
+        SELECT id_pays_ville, GREATEST(CAST(date_debut AS int), %s), LEAST(CAST(date_fin AS int), %s) FROM public.pays_ville WHERE id_entite_ville = %s AND CAST(date_fin AS int) >= %s AND  CAST(date_debut AS int) <= %s
+    """, est_capitale_values)
+    print(f"Inserted {len(est_capitale_values)} rows into capitales")
+
 
 
 
