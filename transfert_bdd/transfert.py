@@ -18,6 +18,8 @@ existence_villes = []
 population_villes = []
 sources_pays = []
 sources_villes = []
+wikipedia_pays = []
+wikipedia_villes = []
 est_capitale = []
 
 def connect_to_my_sql_database():
@@ -48,7 +50,7 @@ def fetch_data_from_old_database(connection_old_database):
         Rows of a table: All the data from the old database
     """
 
-    global noms_pays, noms_villes, geometrie_pays, population_pays, existence_villes, population_villes, sources_pays, sources_villes, est_capitale, entites_pays, entites_villes
+    global noms_pays, noms_villes, geometrie_pays, population_pays, existence_villes, population_villes, sources_pays, sources_villes, wikipedia_pays, wikipedia_villes, est_capitale, entites_pays, entites_villes
 
     cursor = connection_old_database.cursor(dictionary=True)
     #Fetch nom pays
@@ -91,6 +93,14 @@ def fetch_data_from_old_database(connection_old_database):
     #Fetch sources ville
     cursor.execute('SELECT id_element, valeur, annee_debut, annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "source" AND elements.type = "ville"')
     sources_villes = cursor.fetchall()
+
+    #Fetch wikipedia pays
+    cursor.execute('SELECT id_element, valeur, annee_debut, annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "wikipedia" AND elements.type = "pays"')
+    wikipedia_pays = cursor.fetchall()
+
+    #Fetch wikipedia ville
+    cursor.execute('SELECT id_element, valeur, annee_debut, annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "wikipedia" AND elements.type = "ville"')
+    wikipedia_villes = cursor.fetchall()
 
     #Fetch est_capitale
     cursor.execute('SELECT id_element, valeur, annee_debut, annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "capitale" AND elements.type = "ville"')
@@ -293,6 +303,10 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     for i in range(len(population_villes)-1, -1, -1):
         if (population_villes[i]["valeur"] == 'null'):
             print("null : " + population_villes[i])
+        if (population_villes[i]["id_element"] == 837):
+            print(population_villes[i]["id_element"])
+            del population_villes[i]
+            print("837 deleted")
         if (population_villes[i]["id_element"] == 1057):
             print(population_villes[i]["id_element"])
             del population_villes[i]
@@ -303,22 +317,13 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
             del population_villes[i]
             print("1730 deleted")
     
-    for i in range(len(sources_pays)-1, -1, -1):
-        if (sources_pays[i]["valeur"] == 'null'):
-            print("null : " + sources_pays[i])
-        if (sources_pays[i]["id_element"] == 1057):
-            print(sources_pays[i]["id_element"])
-            del sources_pays[i]
-            print("1057 deleted")
-            print(sources_pays[i])
-        if (sources_pays[i]["id_element"] == 1730):
-            print(sources_pays[i]["id_element"])
-            del sources_pays[i]
-            print("1730 deleted")
-    
     for i in range(len(noms_villes)-1, -1, -1):
         if (noms_villes[i]["valeur"] == 'null'):
             print("null : " + noms_villes[i])
+        if (noms_villes[i]["id_element"] == 837):
+            print(noms_villes[i]["id_element"])
+            del noms_villes[i]
+            print("837 deleted")
         if (noms_villes[i]["id_element"] == 1057):
             print(noms_villes[i]["id_element"])
             del noms_villes[i]
@@ -327,6 +332,40 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
         if (noms_villes[i]["id_element"] == 1730):
             print(noms_villes[i]["id_element"])
             del noms_villes[i]
+            print("1730 deleted")
+    
+    for i in range(len(sources_villes)-1, -1, -1):
+        if (sources_villes[i]["valeur"] == 'null'):
+            print("null : " + sources_villes[i])
+        if (sources_villes[i]["id_element"] == 837):
+            print(sources_villes[i]["id_element"])
+            del sources_villes[i]
+            print("837 deleted")
+        if (sources_villes[i]["id_element"] == 1057):
+            print(sources_villes[i]["id_element"])
+            del sources_villes[i]
+            print("1057 deleted")
+            print(sources_villes[i])
+        if (sources_villes[i]["id_element"] == 1730):
+            print(sources_villes[i]["id_element"])
+            del sources_villes[i]
+            print("1730 deleted")
+
+    for i in range(len(wikipedia_villes)-1, -1, -1):
+        if (wikipedia_villes[i]["valeur"] == 'null'):
+            print("null : " + wikipedia_villes[i])
+        if (wikipedia_villes[i]["id_element"] == 837):
+            print(wikipedia_villes[i]["id_element"])
+            del wikipedia_villes[i]
+            print("837 deleted")
+        if (wikipedia_villes[i]["id_element"] == 1057):
+            print(wikipedia_villes[i]["id_element"])
+            del wikipedia_villes[i]
+            print("1057 deleted")
+            print(wikipedia_villes[i])
+        if (wikipedia_villes[i]["id_element"] == 1730):
+            print(wikipedia_villes[i]["id_element"])
+            del wikipedia_villes[i]
             print("1730 deleted")
 
 
@@ -356,22 +395,85 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     # """, pays_values)
     # print(f"Inserted {len(pays_values)} rows into pays")
 
-    # Batch update for sources_pays
-    sources_pays_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in sources_pays]
-    cursor.executemany("""
-        UPDATE public.pays 
-        SET source = "(SELECT source FROM public.pays WHERE id_entite_pays = %s AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s) OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s)))" + "/n" + %s
-        WHERE id_entite_pays = %s AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s) OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s))
-    """, sources_pays_values)
-    print(f"Inserted {len(sources_pays_values)} rows into sources_pays")
+    # # Batch update for sources_pays
+    # sources_pays_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in sources_pays]
+    # cursor.executemany("""
+    #     UPDATE public.pays 
+    #     SET sources = %s
+    #     WHERE id_entite_pays = %s
+    #     AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s) 
+    #     OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s))
+    # """, sources_pays_values)
+    # print(f"Inserted {len(sources_pays_values)} rows into sources_pays")
+
+    # # Batch update for sources_pays abandonned
+    # sources_pays_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in sources_pays]
+    # cursor.executemany("""
+    #     UPDATE public.pays 
+    #     SET sources = CONCAT(%s,(
+    #         SELECT sources
+    #         FROM public.pays 
+    #         WHERE id_entite_pays = %s //TODO: changer id_entite_pays par id_nom_pays
+    #         AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s) 
+    #         OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s))
+    #     ))
+    #     WHERE id_entite_pays = %s //TODO: changer id_entite_pays par id_nom_pays
+    #     AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s) 
+    #     OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s))
+    # """, sources_pays_values)
+    # print(f"Inserted {len(sources_pays_values)} rows into sources_pays")
+
+    # # Batch insert for wikipedia_pays
+    # wikipedia_pays_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in wikipedia_pays]
+    # cursor.executemany("""
+    #     UPDATE public.pays
+    #     SET wikipedia = %s
+    #     WHERE id_entite_pays = %s
+    #     AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s)
+    #     OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s))
+    # """, wikipedia_pays_values)
+    # print(f"Inserted {len(wikipedia_pays_values)} rows into wikipedia_pays")
+
+    # Fetch the noms_villes table to get the id_nom_ville according to each nom_ville
+    cursor.execute('SELECT * FROM public.noms_villes')
+    noms_villes_new_bdd = cursor.fetchall()
+    # insert a column into noms_villes to store the id_nom_ville
+    for i in range(len(noms_villes)):
+        for j in range(len(noms_villes_new_bdd)):
+            if (noms_villes[i]["valeur"] == noms_villes_new_bdd[j][1]):
+                noms_villes[i]["id_nom_ville"] = noms_villes_new_bdd[j][0]
+                break
 
     # # Batch insert for villes
-    # villes_values = [(row["id_element"], row["annee_debut"], row["annee_fin"] ) for row in noms_villes]
+    # villes_values = [(row["id_element"], row["id_nom_ville"], row["annee_debut"], row["annee_fin"] ) for row in noms_villes]
     # cursor.executemany("""
-    #     INSERT INTO public.villes (id_entite_ville, date_debut, date_fin)
-    #     VALUES (%s, %s, %s)
+    #     INSERT INTO public.ville (id_entite_ville, id_nom_ville, date_debut, date_fin)
+    #     VALUES (%s, %s, %s, %s)
     # """, villes_values)
     # print(f"Inserted {len(villes_values)} rows into villes")
+
+    # # Batch update for sources_villes
+    # sources_villes_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in sources_villes]
+    # cursor.executemany("""
+    #     UPDATE public.ville
+    #     SET sources = %s
+    #     WHERE id_entite_ville = %s
+    #     AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s)
+    #     OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s))
+    # """, sources_villes_values)
+    # print(f"Inserted {len(sources_villes_values)} rows into sources_villes")
+
+    # # Batch insert for wikipedia_ville
+    # wikipedia_villes_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in wikipedia_villes]
+    # cursor.executemany("""
+    #     UPDATE public.ville
+    #     SET wikipedia = %s
+    #     WHERE id_entite_ville = %s
+    #     AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s)
+    #     OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s))
+    # """, wikipedia_villes_values)
+    # print(f"Inserted {len(wikipedia_villes_values)} rows into wikipedia_ville")
+
 
 
     connection_new_database.commit()
