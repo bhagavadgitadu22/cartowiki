@@ -432,6 +432,14 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     # """, wikipedia_villes_values)
     # print(f"Inserted {len(wikipedia_villes_values)} rows into wikipedia_ville")
 
+    # Batch insert pays_ville (the table where we store in which countries are the cities)
+    # ST_CONTAINS
+    # I will do an union of tables (entites_pays JOIN geometrie_pays) and (entites_villes JOIN existence_ville) to get the countries of the cities
+    # I will do a loop on the cities and for each city I will do a loop on the countries to see if the city is in the country using ST_CONTAINS
+    # I will also have to check the dates first
+    # I will also have to check if the city is nomade
+
+
 
 
     connection_new_database.commit()
