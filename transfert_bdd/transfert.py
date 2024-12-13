@@ -226,48 +226,30 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
         if (entites_villes[i]["valeur"] == 'null'):
             print("null : " + entites_villes[i])
         if (entites_villes[i]["id_element"] == 24):
-            print(entites_villes[i]["id_element"])
             # S'il s'agit de la position après l'an 0 de la ville 24, on la supprime de la liste
             if (entites_villes[i]["annee_debut"]==0):
-                print(entites_villes[i])
                 del entites_villes[i]
                 print("24 deleted")
-                print(entites_villes[i])
         if (entites_villes[i]["id_element"] == 32):
-            print(entites_villes[i]["id_element"])
             if (entites_villes[i]["annee_debut"]==800):
-                print(entites_villes[i])
                 del entites_villes[i]
                 print("32 deleted")
-                print(entites_villes[i])
         if (entites_villes[i]["id_element"] == 196):
-            print(entites_villes[i]["id_element"])
             if (entites_villes[i]["annee_debut"]==-400):
-                print(entites_villes[i])
                 del entites_villes[i]
                 print("196 deleted")
-                print(entites_villes[i])
         if (entites_villes[i]["id_element"] == 310):
-            print(entites_villes[i]["id_element"])
             if (entites_villes[i]["annee_debut"]==-29):
-                print(entites_villes[i])
                 del entites_villes[i]
                 print("310 deleted")
-                print(entites_villes[i])
         if (entites_villes[i]["id_element"] == 546):
-            print(entites_villes[i]["id_element"])
             if (entites_villes[i]["annee_debut"]==1836):
-                print(entites_villes[i])
                 del entites_villes[i]
                 print("546 deleted")
-                print(entites_villes[i])
         if (entites_villes[i]["id_element"] == 646):
-            print(entites_villes[i]["id_element"])
             if (entites_villes[i]["annee_debut"]==44):
-                print(entites_villes[i])
                 del entites_villes[i]
                 print("646 deleted")
-                print(entites_villes[i])
 
     # entites_villes_values = [(row["id_element"], row["valeur"].replace('"geometry": ', ""),0,) for row in entites_villes]
     # cursor.executemany("""
@@ -276,13 +258,13 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     # """, entites_villes_values)
     # print(f"Inserted {len(entites_villes_values)} rows into entites_villes")
 
-    # # Batch insert for geometrie_pays
-    # geometrie_pays_values = [(row["id_element"] ,row["annee_debut"] ,row["annee_debut"] , row["valeur"].replace('"geometry": ', ""),) for row in geometrie_pays]
-    # cursor.executemany("""
-    #     INSERT INTO public.geometrie_pays (id_entite_pays, date_debut, date_fin, geometry)
-    #     VALUES (%s, %s, %s, ST_GeomFromGeoJSON(%s))
-    # """, geometrie_pays_values)
-    # print(f"Inserted {len(geometrie_pays_values)} rows into geometrie_pays")
+    # Batch insert for geometrie_pays
+    geometrie_pays_values = [(row["id_element"] ,row["annee_debut"] ,row["annee_fin"] , row["valeur"].replace('"geometry": ', ""),) for row in geometrie_pays]
+    cursor.executemany("""
+        INSERT INTO public.geometrie_pays (id_entite_pays, date_debut, date_fin, geometry)
+        VALUES (%s, %s, %s, ST_GeomFromGeoJSON(%s))
+    """, geometrie_pays_values)
+    print(f"Inserted {len(geometrie_pays_values)} rows into geometrie_pays")
 
     # # Batch insert for population_pays
     # population_pays_values = [(row["id_element"], row["annee_debut"], row["valeur"],) for row in population_pays]
@@ -301,70 +283,46 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     # print(f"Inserted {len(existence_villes_values)} rows into existence_ville")
     
     for i in range(len(population_villes)-1, -1, -1):
-        if (population_villes[i]["valeur"] == 'null'):
-            print("null : " + population_villes[i])
         if (population_villes[i]["id_element"] == 837):
-            print(population_villes[i]["id_element"])
             del population_villes[i]
             print("837 deleted")
         if (population_villes[i]["id_element"] == 1057):
-            print(population_villes[i]["id_element"])
             del population_villes[i]
             print("1057 deleted")
-            print(population_villes[i])
         if (population_villes[i]["id_element"] == 1730):
-            print(population_villes[i]["id_element"])
             del population_villes[i]
             print("1730 deleted")
     
     for i in range(len(noms_villes)-1, -1, -1):
-        if (noms_villes[i]["valeur"] == 'null'):
-            print("null : " + noms_villes[i])
         if (noms_villes[i]["id_element"] == 837):
-            print(noms_villes[i]["id_element"])
             del noms_villes[i]
             print("837 deleted")
         if (noms_villes[i]["id_element"] == 1057):
-            print(noms_villes[i]["id_element"])
             del noms_villes[i]
             print("1057 deleted")
-            print(noms_villes[i])
         if (noms_villes[i]["id_element"] == 1730):
-            print(noms_villes[i]["id_element"])
             del noms_villes[i]
             print("1730 deleted")
     
     for i in range(len(sources_villes)-1, -1, -1):
-        if (sources_villes[i]["valeur"] == 'null'):
-            print("null : " + sources_villes[i])
         if (sources_villes[i]["id_element"] == 837):
-            print(sources_villes[i]["id_element"])
             del sources_villes[i]
             print("837 deleted")
         if (sources_villes[i]["id_element"] == 1057):
-            print(sources_villes[i]["id_element"])
             del sources_villes[i]
             print("1057 deleted")
-            print(sources_villes[i])
         if (sources_villes[i]["id_element"] == 1730):
-            print(sources_villes[i]["id_element"])
             del sources_villes[i]
             print("1730 deleted")
 
     for i in range(len(wikipedia_villes)-1, -1, -1):
-        if (wikipedia_villes[i]["valeur"] == 'null'):
-            print("null : " + wikipedia_villes[i])
         if (wikipedia_villes[i]["id_element"] == 837):
-            print(wikipedia_villes[i]["id_element"])
             del wikipedia_villes[i]
             print("837 deleted")
         if (wikipedia_villes[i]["id_element"] == 1057):
-            print(wikipedia_villes[i]["id_element"])
             del wikipedia_villes[i]
             print("1057 deleted")
-            print(wikipedia_villes[i])
         if (wikipedia_villes[i]["id_element"] == 1730):
-            print(wikipedia_villes[i]["id_element"])
             del wikipedia_villes[i]
             print("1730 deleted")
 
