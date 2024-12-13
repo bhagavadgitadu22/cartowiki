@@ -258,13 +258,13 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     # """, entites_villes_values)
     # print(f"Inserted {len(entites_villes_values)} rows into entites_villes")
 
-    # Batch insert for geometrie_pays
-    geometrie_pays_values = [(row["id_element"] ,row["annee_debut"] ,row["annee_fin"] , row["valeur"].replace('"geometry": ', ""),) for row in geometrie_pays]
-    cursor.executemany("""
-        INSERT INTO public.geometrie_pays (id_entite_pays, date_debut, date_fin, geometry)
-        VALUES (%s, %s, %s, ST_GeomFromGeoJSON(%s))
-    """, geometrie_pays_values)
-    print(f"Inserted {len(geometrie_pays_values)} rows into geometrie_pays")
+    # # Batch insert for geometrie_pays
+    # geometrie_pays_values = [(row["id_element"] ,row["annee_debut"] ,row["annee_fin"] , row["valeur"].replace('"geometry": ', ""),) for row in geometrie_pays]
+    # cursor.executemany("""
+    #     INSERT INTO public.geometrie_pays (id_entite_pays, date_debut, date_fin, geometry)
+    #     VALUES (%s, %s, %s, ST_GeomFromGeoJSON(%s))
+    # """, geometrie_pays_values)
+    # print(f"Inserted {len(geometrie_pays_values)} rows into geometrie_pays")
 
     # # Batch insert for population_pays
     # population_pays_values = [(row["id_element"], row["annee_debut"], row["valeur"],) for row in population_pays]
@@ -437,7 +437,27 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     # I will do an union of tables (entites_pays JOIN geometrie_pays) and (entites_villes JOIN existence_ville) to get the countries of the cities
     # I will do a loop on the cities and for each city I will do a loop on the countries to see if the city is in the country using ST_CONTAINS
     # I will also have to check the dates first
-    # I will also have to check if the city is nomade
+    # I will also have to check if the country is nomade
+    # cursor.execute('''
+    #     INSERT INTO public.pays_ville (id_entite_pays, id_entite_ville, date_debut, date_fin) 
+    #     SELECT entites_pays.id_entite_pays, entites_villes.id_entite_ville, 
+    #     GREATEST(CAST(geometrie_pays.date_debut AS int), CAST(existence_ville.date_debut AS int)) AS date_debut,
+    #     LEAST(CAST(geometrie_pays.date_fin AS int), CAST(existence_ville.date_fin AS int)) AS date_fin
+    #     FROM public.geometrie_pays JOIN public.entites_pays ON public.geometrie_pays.id_entite_pays = public.entites_pays.id_entite_pays, 
+    #     public.existence_ville JOIN public.entites_villes ON public.existence_ville.id_entite_ville = public.entites_villes.id_entite_ville 
+    #     WHERE ST_CONTAINS(public.geometrie_pays.geometry, public.entites_villes.position_ville) AND (CAST(geometrie_pays.date_debut AS int)<=CAST(existence_ville.date_fin AS int) AND CAST(geometrie_pays.date_fin AS int)>=CAST(existence_ville.date_debut AS int))
+    # ''')
+
+    # # Batch insert for est_capitale
+    # est_capitale_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in est_capitale]
+    # I will do a loop on the table pays_ville
+    # I will insert into the table capitales the cities that are capitals with the dates of the capitals
+    # The dates will need to be contained in the dates of the cities
+    # cursor.executemany("""
+    #     INSERT INTO public.capitales (id_pays_ville, date_debut, date_fin)
+    #     VALUES (%s, %s, %s)
+    # """, est_capitale_values)
+    # print(f"Inserted {len(est_capitale_values)} rows into capitales")
 
 
 
