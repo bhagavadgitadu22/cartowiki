@@ -31,7 +31,7 @@ CREATE TABLE public.Populations_pays (
                 id_pop_pays INTEGER NOT NULL DEFAULT nextval('public.populations_pays_id_pop_pays_seq'),
                 id_entite_pays INTEGER NOT NULL,
                 population INTEGER NOT NULL,
-                date SMALLINT DEFAULT -30000 NOT NULL,
+                annee SMALLINT DEFAULT -30000 NOT NULL,
                 CONSTRAINT populations_pays_pk PRIMARY KEY (id_pop_pays)
 );
 
@@ -43,15 +43,15 @@ CREATE SEQUENCE public.geometrie_pays_id_geometrie_pays_seq;
 CREATE TABLE public.geometrie_pays (
                 id_geometrie_pays INTEGER NOT NULL DEFAULT nextval('public.geometrie_pays_id_geometrie_pays_seq'),
                 id_entite_pays INTEGER NOT NULL,
-                date_debut SMALLINT DEFAULT -30000 NOT NULL,
-                date_fin SMALLINT DEFAULT -30000 NOT NULL,
+                annee_debut SMALLINT DEFAULT -30000 NOT NULL,
+                annee_fin SMALLINT DEFAULT -30000 NOT NULL,
                 geometry GEOMETRY NOT NULL,
                 id_modif INTEGER,
                 CONSTRAINT geometrie_pays_pk PRIMARY KEY (id_geometrie_pays)
 );
-COMMENT ON COLUMN public.geometrie_pays.date_debut IS '-30000 = première date de la simulation (-inf)
+COMMENT ON COLUMN public.geometrie_pays.annee_debut IS '-30000 = première annee de la simulation (-inf)
 ex : -3000';
-COMMENT ON COLUMN public.geometrie_pays.date_fin IS '-30000 = dernière date de la simulation (+inf)
+COMMENT ON COLUMN public.geometrie_pays.annee_fin IS '-30000 = dernière annee de la simulation (+inf)
 ex : 2022';
 
 
@@ -74,7 +74,7 @@ CREATE TABLE public.Populations_villes (
                 id_pop_ville INTEGER NOT NULL DEFAULT nextval('public.populations_villes_id_pop_ville_seq'),
                 id_entite_ville INTEGER NOT NULL,
                 population INTEGER NOT NULL,
-                date SMALLINT DEFAULT -30000 NOT NULL,
+                annee SMALLINT DEFAULT -30000 NOT NULL,
                 CONSTRAINT populations_villes_pk PRIMARY KEY (id_pop_ville)
 );
 
@@ -89,15 +89,14 @@ CREATE TABLE public.pays_ville (
                 id_pays_ville INTEGER NOT NULL DEFAULT nextval('public.pays_ville_id_pays_ville_seq'),
                 id_entite_pays INTEGER NOT NULL DEFAULT nextval('public.pays_ville_id_entite_pays_seq'),
                 id_entite_ville INTEGER NOT NULL,
-                est_capitale BOOLEAN DEFAULT false NOT NULL,
-                date_debut SMALLINT DEFAULT -30000 NOT NULL,
-                date_fin SMALLINT DEFAULT -30000 NOT NULL,
+                annee_debut SMALLINT DEFAULT -30000 NOT NULL,
+                annee_fin SMALLINT DEFAULT -30000 NOT NULL,
                 CONSTRAINT pays_ville_pk PRIMARY KEY (id_pays_ville)
 );
 COMMENT ON COLUMN public.pays_ville.id_pays_ville IS 'Pays dans lequel est situé une ville';
-COMMENT ON COLUMN public.pays_ville.date_debut IS '-30000 = première date de la simulation (-inf)
+COMMENT ON COLUMN public.pays_ville.annee_debut IS '-30000 = première annee de la simulation (-inf)
 ex : -3000';
-COMMENT ON COLUMN public.pays_ville.date_fin IS '-30000 = dernière date de la simulation (+inf)
+COMMENT ON COLUMN public.pays_ville.annee_fin IS '-30000 = dernière annee de la simulation (+inf)
 ex : 2022';
 
 
@@ -110,14 +109,14 @@ CREATE SEQUENCE public.capitales_id_capitale_seq;
 CREATE TABLE public.capitales (
                 id_capitale INTEGER NOT NULL DEFAULT nextval('public.capitales_id_capitale_seq'),
                 id_pays_ville INTEGER NOT NULL,
-                date_debut SMALLINT DEFAULT -30000 NOT NULL,
-                date_fin SMALLINT DEFAULT -30000 NOT NULL,
+                annee_debut SMALLINT DEFAULT -30000 NOT NULL,
+                annee_fin SMALLINT DEFAULT -30000 NOT NULL,
                 CONSTRAINT capitales_pk PRIMARY KEY (id_capitale)
 );
 COMMENT ON COLUMN public.capitales.id_pays_ville IS 'Pays dans lequel est situé une ville';
-COMMENT ON COLUMN public.capitales.date_debut IS '-30000 = première date de la simulation (-inf)
+COMMENT ON COLUMN public.capitales.annee_debut IS '-30000 = première annee de la simulation (-inf)
 ex : -3000';
-COMMENT ON COLUMN public.capitales.date_fin IS '-30000 = dernière date de la simulation (+inf)
+COMMENT ON COLUMN public.capitales.annee_fin IS '-30000 = dernière annee de la simulation (+inf)
 ex : 2022';
 
 
@@ -128,14 +127,14 @@ CREATE SEQUENCE public.existence_ville_id_existence_ville_seq;
 CREATE TABLE public.existence_ville (
                 id_existence_ville INTEGER NOT NULL DEFAULT nextval('public.existence_ville_id_existence_ville_seq'),
                 id_entite_ville INTEGER NOT NULL,
-                date_debut SMALLINT DEFAULT -30000 NOT NULL,
-                date_fin SMALLINT DEFAULT -30000 NOT NULL,
+                annee_debut SMALLINT DEFAULT -30000 NOT NULL,
+                annee_fin SMALLINT DEFAULT -30000 NOT NULL,
                 CONSTRAINT existence_ville_pk PRIMARY KEY (id_existence_ville)
 );
 COMMENT ON TABLE public.existence_ville IS 'Intervalles d''existence de l''entité "ville" en tant que position géographique';
-COMMENT ON COLUMN public.existence_ville.date_debut IS '-30000 = première date de la simulation (-inf)
+COMMENT ON COLUMN public.existence_ville.annee_debut IS '-30000 = première annee de la simulation (-inf)
 ex : -3000';
-COMMENT ON COLUMN public.existence_ville.date_fin IS '-30000 = dernière date de la simulation (+inf)
+COMMENT ON COLUMN public.existence_ville.annee_fin IS '-30000 = dernière annee de la simulation (+inf)
 ex : 2022';
 
 
@@ -160,15 +159,15 @@ CREATE TABLE public.ville (
                 id_ville INTEGER NOT NULL DEFAULT nextval('public.ville_id_ville_seq'),
                 id_nom_ville INTEGER NOT NULL,
                 id_entite_ville INTEGER NOT NULL,
-                date_debut SMALLINT DEFAULT -30000 NOT NULL,
-                date_fin SMALLINT DEFAULT -30000 NOT NULL,
+                annee_debut SMALLINT DEFAULT -30000 NOT NULL,
+                annee_fin SMALLINT DEFAULT -30000 NOT NULL,
                 wikipedia VARCHAR(256),
                 sources VARCHAR(2048),
                 CONSTRAINT ville_pk PRIMARY KEY (id_ville)
 );
-COMMENT ON COLUMN public.ville.date_debut IS '-30000 = première date de la simulation (-inf)
+COMMENT ON COLUMN public.ville.annee_debut IS '-30000 = première annee de la simulation (-inf)
 ex : -3000';
-COMMENT ON COLUMN public.ville.date_fin IS '-30000 = dernière date de la simulation (+inf)
+COMMENT ON COLUMN public.ville.annee_fin IS '-30000 = dernière annee de la simulation (+inf)
 ex : 2022';
 
 
@@ -193,15 +192,16 @@ CREATE TABLE public.pays (
                 id_pays INTEGER NOT NULL DEFAULT nextval('public.pays_id_pays_seq'),
                 id_nom_pays INTEGER NOT NULL,
                 id_entite_pays INTEGER NOT NULL,
-                date_debut SMALLINT DEFAULT -30000 NOT NULL,
-                date_fin SMALLINT DEFAULT -30000 NOT NULL,
+                annee_debut SMALLINT DEFAULT -30000 NOT NULL,
+                annee_fin SMALLINT DEFAULT -30000 NOT NULL,
+                proto_etat BOOLEAN DEFAULT false NOT NULL,
                 wikipedia VARCHAR(256),
                 sources VARCHAR(2048),
                 CONSTRAINT pays_pk PRIMARY KEY (id_pays)
 );
-COMMENT ON COLUMN public.pays.date_debut IS '-30000 = première date de la simulation (-inf)
+COMMENT ON COLUMN public.pays.annee_debut IS '-30000 = première annee de la simulation (-inf)
 ex : -3000';
-COMMENT ON COLUMN public.pays.date_fin IS '-30000 = dernière date de la simulation (+inf)
+COMMENT ON COLUMN public.pays.annee_fin IS '-30000 = dernière annee de la simulation (+inf)
 ex : 2022';
 
 
