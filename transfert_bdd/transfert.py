@@ -188,7 +188,7 @@ def connect_to_pgsql_database():
             port="5432",
             user="Superuser",
             password="password",
-            database="Cartowiki2"
+            database="Cartowiki"
         )
         return connection
     except Exception as error:
@@ -199,26 +199,26 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     """Inserts data into the new PostgreSQL database"""
     cursor = connection_new_database.cursor()
 
-    # # Batch insert for noms_pays
-    # noms_pays_values = [(row["valeur"],) for row in noms_pays]
-    # cursor.executemany("INSERT INTO public.noms_pays (nom_pays) VALUES (%s)", noms_pays_values)
-    # print(f"Inserted {len(noms_pays_values)} rows into noms_pays")
+    # Batch insert for noms_pays
+    noms_pays_values = [(row["valeur"],) for row in noms_pays]
+    cursor.executemany("INSERT INTO public.noms_pays (nom_pays) VALUES (%s)", noms_pays_values)
+    print(f"Inserted {len(noms_pays_values)} rows into noms_pays")
     
-    # # Batch insert for noms_villes
-    # noms_villes_values = [(row["valeur"],) for row in noms_villes]
-    # cursor.executemany("""
-    #     INSERT INTO public.noms_villes (nom_ville)
-    #     VALUES (%s)
-    # """, noms_villes_values)
-    # print(f"Inserted {len(noms_villes_values)} rows into noms_villes")
+    # Batch insert for noms_villes
+    noms_villes_values = [(row["valeur"],) for row in noms_villes]
+    cursor.executemany("""
+        INSERT INTO public.noms_villes (nom_ville)
+        VALUES (%s)
+    """, noms_villes_values)
+    print(f"Inserted {len(noms_villes_values)} rows into noms_villes")
 
-    # # Batch insert for entites_pays
-    # entites_pays_values = [(row["id"], row["couleur"],) for row in entites_pays]
-    # cursor.executemany("""
-    #     INSERT INTO public.entites_pays (id_entite_pays, couleur)
-    #     VALUES (%s, %s)
-    # """, entites_pays_values)
-    # print(f"Inserted {len(entites_pays_values)} rows into entites_pays")
+    # Batch insert for entites_pays
+    entites_pays_values = [(row["id"], row["couleur"],) for row in entites_pays]
+    cursor.executemany("""
+        INSERT INTO public.entites_pays (id_entite_pays, couleur)
+        VALUES (%s, %s)
+    """, entites_pays_values)
+    print(f"Inserted {len(entites_pays_values)} rows into entites_pays")
 
     # Batch insert for entites_villes
     # https://gis.stackexchange.com/questions/108533/insert-a-point-into-postgis-using-python
@@ -229,111 +229,111 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
             # S'il s'agit de la position après l'an 0 de la ville 24, on la supprime de la liste
             if (entites_villes[i]["annee_debut"]==0):
                 del entites_villes[i]
-                print("24 deleted")
+                print("24 deleted from entites_villes")
         if (entites_villes[i]["id_element"] == 32):
             if (entites_villes[i]["annee_debut"]==800):
                 del entites_villes[i]
-                print("32 deleted")
+                print("32 deleted from entites_villes")
         if (entites_villes[i]["id_element"] == 196):
             if (entites_villes[i]["annee_debut"]==-400):
                 del entites_villes[i]
-                print("196 deleted")
+                print("196 deleted from entites_villes")
         if (entites_villes[i]["id_element"] == 310):
             if (entites_villes[i]["annee_debut"]==-29):
                 del entites_villes[i]
-                print("310 deleted")
+                print("310 deleted from entites_villes")
         if (entites_villes[i]["id_element"] == 546):
             if (entites_villes[i]["annee_debut"]==1836):
                 del entites_villes[i]
-                print("546 deleted")
+                print("546 deleted from entites_villes")
         if (entites_villes[i]["id_element"] == 646):
             if (entites_villes[i]["annee_debut"]==44):
                 del entites_villes[i]
-                print("646 deleted")
+                print("646 deleted from entites_villes")
 
-    # entites_villes_values = [(row["id_element"], row["valeur"].replace('"geometry": ', ""),0,) for row in entites_villes]
-    # cursor.executemany("""
-    #     INSERT INTO public.entites_villes (id_entite_ville, position_ville, crc_entites_villes)
-    #     VALUES (%s, ST_GeomFromGeoJSON(%s),%s)
-    # """, entites_villes_values)
-    # print(f"Inserted {len(entites_villes_values)} rows into entites_villes")
+    entites_villes_values = [(row["id_element"], row["valeur"].replace('"geometry": ', ""),) for row in entites_villes]
+    cursor.executemany("""
+        INSERT INTO public.entites_villes (id_entite_ville, position_ville)
+        VALUES (%s, ST_GeomFromGeoJSON(%s))
+    """, entites_villes_values)
+    print(f"Inserted {len(entites_villes_values)} rows into entites_villes")
 
-    # # Batch insert for geometrie_pays
-    # geometrie_pays_values = [(row["id_element"] ,row["annee_debut"] ,row["annee_fin"] , row["valeur"].replace('"geometry": ', ""),) for row in geometrie_pays]
-    # cursor.executemany("""
-    #     INSERT INTO public.geometrie_pays (id_entite_pays, date_debut, date_fin, geometry)
-    #     VALUES (%s, %s, %s, ST_GeomFromGeoJSON(%s))
-    # """, geometrie_pays_values)
-    # print(f"Inserted {len(geometrie_pays_values)} rows into geometrie_pays")
+    # Batch insert for geometrie_pays
+    geometrie_pays_values = [(row["id_element"] ,row["annee_debut"] ,row["annee_fin"] , row["valeur"].replace('"geometry": ', ""),) for row in geometrie_pays]
+    cursor.executemany("""
+        INSERT INTO public.geometrie_pays (id_entite_pays, date_debut, date_fin, geometry)
+        VALUES (%s, %s, %s, ST_GeomFromGeoJSON(%s))
+    """, geometrie_pays_values)
+    print(f"Inserted {len(geometrie_pays_values)} rows into geometrie_pays")
 
-    # # Batch insert for population_pays
-    # population_pays_values = [(row["id_element"], row["annee_debut"], row["valeur"],) for row in population_pays]
-    # cursor.executemany("""
-    #     INSERT INTO public.populations_pays (id_entite_pays, date, population)
-    #     VALUES (%s, %s, %s)
-    # """, population_pays_values)
-    # print(f"Inserted {len(population_pays_values)} rows into population_pays")
+    # Batch insert for population_pays
+    population_pays_values = [(row["id_element"], row["annee_debut"], row["valeur"],) for row in population_pays]
+    cursor.executemany("""
+        INSERT INTO public.populations_pays (id_entite_pays, date, population)
+        VALUES (%s, %s, %s)
+    """, population_pays_values)
+    print(f"Inserted {len(population_pays_values)} rows into population_pays")
 
-    # # Batch insert for existence_villes
-    # existence_villes_values = [(row["id_element"], row["annee_debut"], row["annee_fin"],) for row in existence_villes]
-    # cursor.executemany("""
-    #     INSERT INTO public.existence_ville (id_entite_ville, date_debut, date_fin)
-    #     VALUES (%s, %s, %s)
-    # """, existence_villes_values)
-    # print(f"Inserted {len(existence_villes_values)} rows into existence_ville")
+    # Batch insert for existence_villes
+    existence_villes_values = [(row["id_element"], row["annee_debut"], row["annee_fin"],) for row in existence_villes]
+    cursor.executemany("""
+        INSERT INTO public.existence_ville (id_entite_ville, date_debut, date_fin)
+        VALUES (%s, %s, %s)
+    """, existence_villes_values)
+    print(f"Inserted {len(existence_villes_values)} rows into existence_ville")
     
     for i in range(len(population_villes)-1, -1, -1):
         if (population_villes[i]["id_element"] == 837):
             del population_villes[i]
-            print("837 deleted")
+            print("837 deleted from population_villes")
         if (population_villes[i]["id_element"] == 1057):
             del population_villes[i]
-            print("1057 deleted")
+            print("1057 deleted from population_villes")
         if (population_villes[i]["id_element"] == 1730):
             del population_villes[i]
-            print("1730 deleted")
+            print("1730 deleted from population_villes")
     
     for i in range(len(noms_villes)-1, -1, -1):
         if (noms_villes[i]["id_element"] == 837):
             del noms_villes[i]
-            print("837 deleted")
+            print("837 deleted from noms_villes")
         if (noms_villes[i]["id_element"] == 1057):
             del noms_villes[i]
-            print("1057 deleted")
+            print("1057 deleted from noms_villes")
         if (noms_villes[i]["id_element"] == 1730):
             del noms_villes[i]
-            print("1730 deleted")
+            print("1730 deleted from noms_villes")
     
     for i in range(len(sources_villes)-1, -1, -1):
         if (sources_villes[i]["id_element"] == 837):
             del sources_villes[i]
-            print("837 deleted")
+            print("837 deleted from sources_villes")
         if (sources_villes[i]["id_element"] == 1057):
             del sources_villes[i]
-            print("1057 deleted")
+            print("1057 deleted from sources_villes")
         if (sources_villes[i]["id_element"] == 1730):
             del sources_villes[i]
-            print("1730 deleted")
+            print("1730 deleted from sources_villes")
 
     for i in range(len(wikipedia_villes)-1, -1, -1):
         if (wikipedia_villes[i]["id_element"] == 837):
             del wikipedia_villes[i]
-            print("837 deleted")
+            print("837 deleted from wikipedia_villes")
         if (wikipedia_villes[i]["id_element"] == 1057):
             del wikipedia_villes[i]
-            print("1057 deleted")
+            print("1057 deleted from wikipedia_villes")
         if (wikipedia_villes[i]["id_element"] == 1730):
             del wikipedia_villes[i]
-            print("1730 deleted")
+            print("1730 deleted from wikipedia_villes")
 
 
-    # # Batch insert for population_villes
-    # population_villes_values = [(row["id_element"], row["annee_debut"], row["valeur"],) for row in population_villes]
-    # cursor.executemany("""
-    #     INSERT INTO public.populations_villes (id_entite_ville, date, population)
-    #     VALUES (%s, %s, %s)
-    # """, population_villes_values)
-    # print(f"Inserted {len(population_villes_values)} rows into population_villes")
+    # Batch insert for population_villes
+    population_villes_values = [(row["id_element"], row["annee_debut"], row["valeur"],) for row in population_villes]
+    cursor.executemany("""
+        INSERT INTO public.populations_villes (id_entite_ville, date, population)
+        VALUES (%s, %s, %s)
+    """, population_villes_values)
+    print(f"Inserted {len(population_villes_values)} rows into population_villes")
     
     #  Fetch the noms_pays table to get the id_nom_pays according to each nom_pays
     cursor.execute('SELECT * FROM public.noms_pays')
@@ -345,52 +345,35 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
                 noms_pays[i]["id_nom_pays"] = noms_pays_new_bdd[j][0]
                 break
     
-    # # Batch insert for pays
-    # pays_values = [(row["id_element"], row["id_nom_pays"], row["annee_debut"], row["annee_fin"] ) for row in noms_pays]
-    # cursor.executemany("""
-    #     INSERT INTO public.pays (id_entite_pays, id_nom_pays, date_debut, date_fin)
-    #     VALUES (%s, %s, %s, %s)
-    # """, pays_values)
-    # print(f"Inserted {len(pays_values)} rows into pays")
+    # Batch insert for pays
+    pays_values = [(row["id_element"], row["id_nom_pays"], row["annee_debut"], row["annee_fin"] ) for row in noms_pays]
+    cursor.executemany("""
+        INSERT INTO public.pays (id_entite_pays, id_nom_pays, date_debut, date_fin)
+        VALUES (%s, %s, %s, %s)
+    """, pays_values)
+    print(f"Inserted {len(pays_values)} rows into pays")
 
-    # # Batch update for sources_pays
-    # sources_pays_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in sources_pays]
-    # cursor.executemany("""
-    #     UPDATE public.pays 
-    #     SET sources = %s
-    #     WHERE id_entite_pays = %s
-    #     AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s) 
-    #     OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s))
-    # """, sources_pays_values)
-    # print(f"Inserted {len(sources_pays_values)} rows into sources_pays")
+    # Batch update for sources_pays
+    sources_pays_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in sources_pays]
+    cursor.executemany("""
+        UPDATE public.pays 
+        SET sources = %s
+        WHERE id_entite_pays = %s
+        AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s) 
+        OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s))
+    """, sources_pays_values)
+    print(f"Inserted {len(sources_pays_values)} rows into sources_pays")
 
-    # # Batch update for sources_pays abandonned
-    # sources_pays_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in sources_pays]
-    # cursor.executemany("""
-    #     UPDATE public.pays 
-    #     SET sources = CONCAT(%s,(
-    #         SELECT sources
-    #         FROM public.pays 
-    #         WHERE id_entite_pays = %s //TODO: changer id_entite_pays par id_nom_pays
-    #         AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s) 
-    #         OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s))
-    #     ))
-    #     WHERE id_entite_pays = %s //TODO: changer id_entite_pays par id_nom_pays
-    #     AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s) 
-    #     OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s))
-    # """, sources_pays_values)
-    # print(f"Inserted {len(sources_pays_values)} rows into sources_pays")
-
-    # # Batch insert for wikipedia_pays
-    # wikipedia_pays_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in wikipedia_pays]
-    # cursor.executemany("""
-    #     UPDATE public.pays
-    #     SET wikipedia = %s
-    #     WHERE id_entite_pays = %s
-    #     AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s)
-    #     OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s))
-    # """, wikipedia_pays_values)
-    # print(f"Inserted {len(wikipedia_pays_values)} rows into wikipedia_pays")
+    # Batch insert for wikipedia_pays
+    wikipedia_pays_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in wikipedia_pays]
+    cursor.executemany("""
+        UPDATE public.pays
+        SET wikipedia = %s
+        WHERE id_entite_pays = %s
+        AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s)
+        OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s))
+    """, wikipedia_pays_values)
+    print(f"Inserted {len(wikipedia_pays_values)} rows into wikipedia_pays")
 
     # Fetch the noms_villes table to get the id_nom_ville according to each nom_ville
     cursor.execute('SELECT * FROM public.noms_villes')
@@ -402,35 +385,35 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
                 noms_villes[i]["id_nom_ville"] = noms_villes_new_bdd[j][0]
                 break
 
-    # # Batch insert for villes
-    # villes_values = [(row["id_element"], row["id_nom_ville"], row["annee_debut"], row["annee_fin"] ) for row in noms_villes]
-    # cursor.executemany("""
-    #     INSERT INTO public.ville (id_entite_ville, id_nom_ville, date_debut, date_fin)
-    #     VALUES (%s, %s, %s, %s)
-    # """, villes_values)
-    # print(f"Inserted {len(villes_values)} rows into villes")
+    # Batch insert for villes
+    villes_values = [(row["id_element"], row["id_nom_ville"], row["annee_debut"], row["annee_fin"] ) for row in noms_villes]
+    cursor.executemany("""
+        INSERT INTO public.ville (id_entite_ville, id_nom_ville, date_debut, date_fin)
+        VALUES (%s, %s, %s, %s)
+    """, villes_values)
+    print(f"Inserted {len(villes_values)} rows into villes")
 
-    # # Batch update for sources_villes
-    # sources_villes_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in sources_villes]
-    # cursor.executemany("""
-    #     UPDATE public.ville
-    #     SET sources = %s
-    #     WHERE id_entite_ville = %s
-    #     AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s)
-    #     OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s))
-    # """, sources_villes_values)
-    # print(f"Inserted {len(sources_villes_values)} rows into sources_villes")
+    # Batch update for sources_villes
+    sources_villes_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in sources_villes]
+    cursor.executemany("""
+        UPDATE public.ville
+        SET sources = %s
+        WHERE id_entite_ville = %s
+        AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s)
+        OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s))
+    """, sources_villes_values)
+    print(f"Inserted {len(sources_villes_values)} rows into sources_villes")
 
-    # # Batch insert for wikipedia_ville
-    # wikipedia_villes_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in wikipedia_villes]
-    # cursor.executemany("""
-    #     UPDATE public.ville
-    #     SET wikipedia = %s
-    #     WHERE id_entite_ville = %s
-    #     AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s)
-    #     OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s))
-    # """, wikipedia_villes_values)
-    # print(f"Inserted {len(wikipedia_villes_values)} rows into wikipedia_ville")
+    # Batch insert for wikipedia_ville
+    wikipedia_villes_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in wikipedia_villes]
+    cursor.executemany("""
+        UPDATE public.ville
+        SET wikipedia = %s
+        WHERE id_entite_ville = %s
+        AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s)
+        OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s))
+    """, wikipedia_villes_values)
+    print(f"Inserted {len(wikipedia_villes_values)} rows into wikipedia_ville")
 
     # Batch insert pays_ville (the table where we store in which countries are the cities)
     # ST_CONTAINS
@@ -438,15 +421,16 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     # I will do a loop on the cities and for each city I will do a loop on the countries to see if the city is in the country using ST_CONTAINS
     # I will also have to check the dates first
     # I will also have to check if the country is nomade
-    # cursor.execute('''
-    #     INSERT INTO public.pays_ville (id_entite_pays, id_entite_ville, date_debut, date_fin) 
-    #     SELECT entites_pays.id_entite_pays, entites_villes.id_entite_ville, 
-    #     GREATEST(CAST(geometrie_pays.date_debut AS int), CAST(existence_ville.date_debut AS int)) AS date_debut,
-    #     LEAST(CAST(geometrie_pays.date_fin AS int), CAST(existence_ville.date_fin AS int)) AS date_fin
-    #     FROM public.geometrie_pays JOIN public.entites_pays ON public.geometrie_pays.id_entite_pays = public.entites_pays.id_entite_pays, 
-    #     public.existence_ville JOIN public.entites_villes ON public.existence_ville.id_entite_ville = public.entites_villes.id_entite_ville 
-    #     WHERE ST_CONTAINS(public.geometrie_pays.geometry, public.entites_villes.position_ville) AND (CAST(geometrie_pays.date_debut AS int)<=CAST(existence_ville.date_fin AS int) AND CAST(geometrie_pays.date_fin AS int)>=CAST(existence_ville.date_debut AS int))
-    # ''')
+    cursor.execute('''
+        INSERT INTO public.pays_ville (id_entite_pays, id_entite_ville, date_debut, date_fin) 
+        SELECT entites_pays.id_entite_pays, entites_villes.id_entite_ville, 
+        GREATEST(CAST(geometrie_pays.date_debut AS int), CAST(existence_ville.date_debut AS int)) AS date_debut,
+        LEAST(CAST(geometrie_pays.date_fin AS int), CAST(existence_ville.date_fin AS int)) AS date_fin
+        FROM public.geometrie_pays JOIN public.entites_pays ON public.geometrie_pays.id_entite_pays = public.entites_pays.id_entite_pays, 
+        public.existence_ville JOIN public.entites_villes ON public.existence_ville.id_entite_ville = public.entites_villes.id_entite_ville 
+        WHERE ST_CONTAINS(public.geometrie_pays.geometry, public.entites_villes.position_ville) AND (CAST(geometrie_pays.date_debut AS int)<=CAST(existence_ville.date_fin AS int) AND CAST(geometrie_pays.date_fin AS int)>=CAST(existence_ville.date_debut AS int))
+    ''')
+    print(f"Inserted rows into pays_ville")
 
     # Batch insert for est_capitale
     # I will do a loop on the table pays_ville
@@ -458,10 +442,6 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
         SELECT id_pays_ville, GREATEST(CAST(date_debut AS int), %s), LEAST(CAST(date_fin AS int), %s) FROM public.pays_ville WHERE id_entite_ville = %s AND CAST(date_fin AS int) >= %s AND  CAST(date_debut AS int) <= %s
     """, est_capitale_values)
     print(f"Inserted {len(est_capitale_values)} rows into capitales")
-
-
-
-
 
     connection_new_database.commit()
 
