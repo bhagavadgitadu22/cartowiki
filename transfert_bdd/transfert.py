@@ -146,7 +146,7 @@ def generate_geojson_and_caracs(data):
                     "type_element": row["type"],
                     "id_element": row["id_element"]
                 },
-                "geometry": json.loads(row["valeur"].replace('"geometry": ', ""))  # This is where the error occurs
+                "geometry": json.loads(row["valeur"].replace('"geometry": ', ""))
             }
             geojson["features"].append(feature)
 
@@ -199,12 +199,12 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     """Inserts data into the new PostgreSQL database"""
     cursor = connection_new_database.cursor()
 
-    # Batch insert for noms_pays
+    # Batch insert for noms_pays TODO : don't insert twice the same name
     noms_pays_values = [(row["valeur"],) for row in noms_pays]
     cursor.executemany("INSERT INTO public.noms_pays (nom_pays) VALUES (%s)", noms_pays_values)
     print(f"Inserted {len(noms_pays_values)} rows into noms_pays")
     
-    # Batch insert for noms_villes
+    # Batch insert for noms_villes TODO : don't insert twice the same name
     noms_villes_values = [(row["valeur"],) for row in noms_villes]
     cursor.executemany("""
         INSERT INTO public.noms_villes (nom_ville)
@@ -420,7 +420,6 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     # I will do an union of tables (entites_pays JOIN geometrie_pays) and (entites_villes JOIN existence_ville) to get the countries of the cities
     # I will do a loop on the cities and for each city I will do a loop on the countries to see if the city is in the country using ST_CONTAINS
     # I will also have to check the dates first
-    # I will also have to check if the country is nomade
     cursor.execute('''
         INSERT INTO public.pays_ville (id_entite_pays, id_entite_ville, date_debut, date_fin) 
         SELECT entites_pays.id_entite_pays, entites_villes.id_entite_ville, 
@@ -431,6 +430,7 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
         WHERE ST_CONTAINS(public.geometrie_pays.geometry, public.entites_villes.position_ville) AND (CAST(geometrie_pays.date_debut AS int)<=CAST(existence_ville.date_fin AS int) AND CAST(geometrie_pays.date_fin AS int)>=CAST(existence_ville.date_debut AS int))
     ''')
     print(f"Inserted rows into pays_ville")
+    # TODO : concatener les éléments dont les id sont les mêmes et les dates se suivent parfaitement
 
     # Batch insert for est_capitale
     # I will do a loop on the table pays_ville
@@ -457,10 +457,6 @@ def main():
 
     geojson, caracs = generate_geojson_and_caracs(data)
     sort_caracs(caracs)
-
-    # print(json.dumps(geojson, ensure_ascii=False))
-    # print(';;;')
-    # print(json.dumps(caracs, ensure_ascii=False))
 
     connection_old_database.close()
 
