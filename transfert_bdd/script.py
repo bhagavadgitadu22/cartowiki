@@ -182,19 +182,17 @@ def create_sql_file():
     id_counter_pays = 1
     id_counter_villes = 1
 
-    noms_pays_values = [(row["valeur"],) for row in noms_pays]
-    noms_pays_ids["valeur"] = []
-    for row in noms_pays_values:
-        noms_pays_ids["valeur"].append(id_counter_pays);
-        sql_content.append(f"INSERT INTO public.noms_pays (id_nom_pays, nom_pays) VALUES ({id_counter_pays}, '{row[0]}');")
+    noms_pays_values = [row["valeur"] for row in noms_pays]
+    for value in noms_pays_values:
+        noms_pays_ids[value] = id_counter_pays
+        sql_content.append(f"INSERT INTO public.noms_pays (id_nom_pays, nom_pays) VALUES ({id_counter_pays}, '{value}');")
         id_counter_pays += 1
     print(f"Prepared {len(noms_pays_values)} insertions for noms_pays")
 
-    noms_villes_values = [(row["valeur"],) for row in noms_villes]
-    noms_villes_ids["valeur"] = []
-    for row in noms_villes_values:
-        noms_villes_ids["valeur"].append(id_counter_villes)
-        sql_content.append(f"INSERT INTO public.noms_villes (id_nom_ville, nom_ville) VALUES ({id_counter_villes}, '{row[0]}');")
+    noms_villes_values = [row["valeur"] for row in noms_villes]
+    for value in noms_villes_values:
+        noms_villes_ids[value] = id_counter_villes
+        sql_content.append(f"INSERT INTO public.noms_villes (id_nom_ville, nom_ville) VALUES ({id_counter_villes}, '{value}');")
         id_counter_villes += 1    
     print(f"Prepared {len(noms_villes_values)} insertions for noms_villes")
 
