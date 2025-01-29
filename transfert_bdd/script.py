@@ -185,14 +185,14 @@ def create_sql_file():
     noms_pays_values = [row["valeur"] for row in noms_pays]
     for value in noms_pays_values:
         noms_pays_ids[value] = id_counter_pays
-        sql_content.append(f"INSERT INTO public.noms_pays (id_nom_pays, nom_pays) VALUES ({id_counter_pays}, '{value}');")
+        sql_content.append(f"INSERT INTO public.noms_pays (id_nom_pays, nom_pays) VALUES ({id_counter_pays}, '{value.replace("'", "''")}');")
         id_counter_pays += 1
     print(f"Prepared {len(noms_pays_values)} insertions for noms_pays")
 
     noms_villes_values = [row["valeur"] for row in noms_villes]
     for value in noms_villes_values:
         noms_villes_ids[value] = id_counter_villes
-        sql_content.append(f"INSERT INTO public.noms_villes (id_nom_ville, nom_ville) VALUES ({id_counter_villes}, '{value}');")
+        sql_content.append(f"INSERT INTO public.noms_villes (id_nom_ville, nom_ville) VALUES ({id_counter_villes}, '{value.replace("'", "''")}');")
         id_counter_villes += 1    
     print(f"Prepared {len(noms_villes_values)} insertions for noms_villes")
 
@@ -299,10 +299,10 @@ def create_sql_file():
     
     # Batch insert for population_villes
     for row in population_villes:
-        sql_content += f"""
+        sql_content.append(f"""
             INSERT INTO public.populations_villes (id_entite_ville, date, population)
             VALUES ({row["id_element"]}, {row["annee_debut"]}, {row["valeur"]});
-        """
+        """)
     print(f"Inserted {len(population_villes)} rows into population_villes")
     
     for i in range(len(noms_pays)):
@@ -310,32 +310,32 @@ def create_sql_file():
 
     # Batch insert for pays
     for row in noms_pays:
-        sql_content += f"""
+        sql_content.append(f"""
             INSERT INTO public.pays (id_entite_pays, id_nom_pays, date_debut, date_fin)
             VALUES ({row["id_element"]}, {row["id_nom_pays"]}, {row["annee_debut"]}, {row["annee_fin"]});
-        """
+        """)
     print(f"Inserted {len(noms_pays)} rows into pays")
 
     # Batch update for sources_pays
     for row in sources_pays:
-        sql_content += f"""
+        sql_content.append(f"""
             UPDATE public.pays 
-            SET sources = {row["valeur"]}
+            SET sources = {row["valeur"].replace("'", "''")}
             WHERE id_entite_pays = {row["id_element"]}
             AND ((CAST(date_debut AS int) <= {row["annee_debut"]} AND CAST(date_fin AS int) >= {row["annee_debut"]}) 
             OR (CAST(date_debut AS int) <= {row["annee_fin"]} AND CAST(date_fin AS int) >= {row["annee_fin"]}));
-        """
+        """)
     print(f"Inserted {len(sources_pays)} rows into sources_pays")
 
     # Batch insert for wikipedia_pays
     for row in wikipedia_pays:
-        sql_content += f"""
+        sql_content.append(f"""
             UPDATE public.pays
-            SET wikipedia = {row["valeur"]}
+            SET wikipedia = {row["valeur"].replace("'", "''")}
             WHERE id_entite_pays = {row["id_element"]}
             AND ((CAST(date_debut AS int) <= {row["annee_debut"]} AND CAST(date_fin AS int) >= {row["annee_debut"]})
             OR (CAST(date_debut AS int) <= {row["annee_fin"]} AND CAST(date_fin AS int) >= {row["annee_fin"]}));
-        """
+        """)
     print(f"Inserted {len(wikipedia_pays)} rows into wikipedia_pays")
 
 
@@ -345,21 +345,21 @@ def create_sql_file():
 
     # Batch insert for villes
     for row in noms_villes:
-        sql_content += f"""
+        sql_content.append(f"""
             INSERT INTO public.ville (id_entite_ville, id_nom_ville, date_debut, date_fin)
             VALUES ({row["id_element"]}, {row["id_nom_ville"]}, {row["annee_debut"]}, {row["annee_fin"]});
-        """
+        """)
     print(f"Inserted {len(noms_villes)} rows into villes")
 
     # Batch update for sources_villes
     for row in sources_villes:
-        sql_content += f"""
+        sql_content.append(f"""
             UPDATE public.ville
-            SET sources = {row["valeur"]}
+            SET sources = {row["valeur"].replace("'", "''")}
             WHERE id_entite_ville = {row["id_element"]}
             AND ((CAST(date_debut AS int) <= {row["annee_debut"]} AND CAST(date_fin AS int) >= {row["annee_debut"]})
             OR (CAST(date_debut AS int) <= {row["annee_fin"]} AND CAST(date_fin AS int) >= {row["annee_fin"]}));
-        """
+        """)
     print(f"Inserted {len(sources_villes)} rows into sources_villes")
     
     # Batch insert pays_ville (the table where we store in which countries are the cities)
@@ -368,7 +368,7 @@ def create_sql_file():
     # I will do a loop on the cities and for each city I will do a loop on the countries to see if the city is in the country using ST_CONTAINS
     # I will also have to check the dates first
     # I will also have to check if the country is nomade
-    sql_content += f"""
+    sql_content.append(f"""
         INSERT INTO public.pays_ville (id_entite_pays, id_entite_ville, date_debut, date_fin) 
         SELECT entites_pays.id_entite_pays, entites_villes.id_entite_ville, 
         GREATEST(CAST(geometrie_pays.date_debut AS int), CAST(existence_ville.date_debut AS int)) AS date_debut,
@@ -376,7 +376,7 @@ def create_sql_file():
         FROM public.geometrie_pays JOIN public.entites_pays ON public.geometrie_pays.id_entite_pays = public.entites_pays.id_entite_pays, 
         public.existence_ville JOIN public.entites_villes ON public.existence_ville.id_entite_ville = public.entites_villes.id_entite_ville 
         WHERE ST_CONTAINS(public.geometrie_pays.geometry, public.entites_villes.position_ville) AND (CAST(geometrie_pays.date_debut AS int)<=CAST(existence_ville.date_fin AS int) AND CAST(geometrie_pays.date_fin AS int)>=CAST(existence_ville.date_debut AS int))
-    """
+    """)
     
     est_capitale_values = [(row["annee_debut"], row["annee_fin"], row["id_element"], row["annee_debut"], row["annee_fin"],) for row in est_capitale]
 
