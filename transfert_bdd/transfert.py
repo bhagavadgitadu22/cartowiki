@@ -80,7 +80,7 @@ def fetch_data_from_old_database(connection_old_database):
     #Fetch existence ville
     cursor.execute('SELECT id_element, annee_debut, annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "geometry" AND elements.type = "ville"')
     existence_villes = cursor.fetchall()
-    #On a besoin que des dates des geometries pour savoir à quelles dates les villes existent. Leur géométrie est déjà dans la table entites_villes
+    #On a besoin que des annees des geometries pour savoir à quelles annees les villes existent. Leur géométrie est déjà dans la table entites_villes
 
     #Fetch population ville
     cursor.execute('SELECT id_element, valeur, annee_debut, annee_fin FROM formes JOIN elements ON formes.id_element = elements.id WHERE champ = "population" AND elements.type = "ville"')
@@ -188,7 +188,7 @@ def connect_to_pgsql_database():
             port="5432",
             user="Superuser",
             password="password",
-            database="Cartowiki"
+            database="cartowiki"
         )
         return connection
     except Exception as error:
@@ -261,7 +261,7 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     # Batch insert for geometrie_pays
     geometrie_pays_values = [(row["id_element"] ,row["annee_debut"] ,row["annee_fin"] , row["valeur"].replace('"geometry": ', ""),) for row in geometrie_pays]
     cursor.executemany("""
-        INSERT INTO public.geometrie_pays (id_entite_pays, date_debut, date_fin, geometry)
+        INSERT INTO public.geometrie_pays (id_entite_pays, annee_debut, annee_fin, geometry)
         VALUES (%s, %s, %s, ST_GeomFromGeoJSON(%s))
     """, geometrie_pays_values)
     print(f"Inserted {len(geometrie_pays_values)} rows into geometrie_pays")
@@ -269,7 +269,7 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     # Batch insert for population_pays
     population_pays_values = [(row["id_element"], row["annee_debut"], row["valeur"],) for row in population_pays]
     cursor.executemany("""
-        INSERT INTO public.populations_pays (id_entite_pays, date, population)
+        INSERT INTO public.populations_pays (id_entite_pays, annee, population)
         VALUES (%s, %s, %s)
     """, population_pays_values)
     print(f"Inserted {len(population_pays_values)} rows into population_pays")
@@ -277,7 +277,7 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     # Batch insert for existence_villes
     existence_villes_values = [(row["id_element"], row["annee_debut"], row["annee_fin"],) for row in existence_villes]
     cursor.executemany("""
-        INSERT INTO public.existence_ville (id_entite_ville, date_debut, date_fin)
+        INSERT INTO public.existence_ville (id_entite_ville, annee_debut, annee_fin)
         VALUES (%s, %s, %s)
     """, existence_villes_values)
     print(f"Inserted {len(existence_villes_values)} rows into existence_ville")
@@ -330,7 +330,7 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     # Batch insert for population_villes
     population_villes_values = [(row["id_element"], row["annee_debut"], row["valeur"],) for row in population_villes]
     cursor.executemany("""
-        INSERT INTO public.populations_villes (id_entite_ville, date, population)
+        INSERT INTO public.populations_villes (id_entite_ville, annee, population)
         VALUES (%s, %s, %s)
     """, population_villes_values)
     print(f"Inserted {len(population_villes_values)} rows into population_villes")
@@ -348,7 +348,7 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     # Batch insert for pays
     pays_values = [(row["id_element"], row["id_nom_pays"], row["annee_debut"], row["annee_fin"] ) for row in noms_pays]
     cursor.executemany("""
-        INSERT INTO public.pays (id_entite_pays, id_nom_pays, date_debut, date_fin)
+        INSERT INTO public.pays (id_entite_pays, id_nom_pays, annee_debut, annee_fin)
         VALUES (%s, %s, %s, %s)
     """, pays_values)
     print(f"Inserted {len(pays_values)} rows into pays")
@@ -359,8 +359,8 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
         UPDATE public.pays 
         SET sources = %s
         WHERE id_entite_pays = %s
-        AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s) 
-        OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s))
+        AND ((CAST(annee_debut AS int) <= %s AND CAST(annee_fin AS int) >= %s) 
+        OR (CAST(annee_debut AS int) <= %s AND CAST(annee_fin AS int) >= %s))
     """, sources_pays_values)
     print(f"Inserted {len(sources_pays_values)} rows into sources_pays")
 
@@ -370,8 +370,8 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
         UPDATE public.pays
         SET wikipedia = %s
         WHERE id_entite_pays = %s
-        AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s)
-        OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s))
+        AND ((CAST(annee_debut AS int) <= %s AND CAST(annee_fin AS int) >= %s)
+        OR (CAST(annee_debut AS int) <= %s AND CAST(annee_fin AS int) >= %s))
     """, wikipedia_pays_values)
     print(f"Inserted {len(wikipedia_pays_values)} rows into wikipedia_pays")
 
@@ -388,7 +388,7 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     # Batch insert for villes
     villes_values = [(row["id_element"], row["id_nom_ville"], row["annee_debut"], row["annee_fin"] ) for row in noms_villes]
     cursor.executemany("""
-        INSERT INTO public.ville (id_entite_ville, id_nom_ville, date_debut, date_fin)
+        INSERT INTO public.ville (id_entite_ville, id_nom_ville, annee_debut, annee_fin)
         VALUES (%s, %s, %s, %s)
     """, villes_values)
     print(f"Inserted {len(villes_values)} rows into villes")
@@ -399,8 +399,8 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
         UPDATE public.ville
         SET sources = %s
         WHERE id_entite_ville = %s
-        AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s)
-        OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s))
+        AND ((CAST(annee_debut AS int) <= %s AND CAST(annee_fin AS int) >= %s)
+        OR (CAST(annee_debut AS int) <= %s AND CAST(annee_fin AS int) >= %s))
     """, sources_villes_values)
     print(f"Inserted {len(sources_villes_values)} rows into sources_villes")
 
@@ -410,8 +410,8 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
         UPDATE public.ville
         SET wikipedia = %s
         WHERE id_entite_ville = %s
-        AND ((CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s)
-        OR (CAST(date_debut AS int) <= %s AND CAST(date_fin AS int) >= %s))
+        AND ((CAST(annee_debut AS int) <= %s AND CAST(annee_fin AS int) >= %s)
+        OR (CAST(annee_debut AS int) <= %s AND CAST(annee_fin AS int) >= %s))
     """, wikipedia_villes_values)
     print(f"Inserted {len(wikipedia_villes_values)} rows into wikipedia_ville")
 
@@ -421,30 +421,72 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     # I will do a loop on the cities and for each city I will do a loop on the countries to see if the city is in the country using ST_CONTAINS
     # I will also have to check the dates first
     cursor.execute('''
-        INSERT INTO public.pays_ville (id_entite_pays, id_entite_ville, date_debut, date_fin) 
+        INSERT INTO public.pays_ville (id_entite_pays, id_entite_ville, annee_debut, annee_fin) 
         SELECT entites_pays.id_entite_pays, entites_villes.id_entite_ville, 
-        GREATEST(CAST(geometrie_pays.date_debut AS int), CAST(existence_ville.date_debut AS int)) AS date_debut,
-        LEAST(CAST(geometrie_pays.date_fin AS int), CAST(existence_ville.date_fin AS int)) AS date_fin
+        GREATEST(CAST(geometrie_pays.annee_debut AS int), CAST(existence_ville.annee_debut AS int)) AS annee_debut,
+        LEAST(CAST(geometrie_pays.annee_fin AS int), CAST(existence_ville.annee_fin AS int)) AS annee_fin
         FROM public.geometrie_pays JOIN public.entites_pays ON public.geometrie_pays.id_entite_pays = public.entites_pays.id_entite_pays, 
         public.existence_ville JOIN public.entites_villes ON public.existence_ville.id_entite_ville = public.entites_villes.id_entite_ville 
-        WHERE ST_CONTAINS(public.geometrie_pays.geometry, public.entites_villes.position_ville) AND (CAST(geometrie_pays.date_debut AS int)<=CAST(existence_ville.date_fin AS int) AND CAST(geometrie_pays.date_fin AS int)>=CAST(existence_ville.date_debut AS int))
+        WHERE ST_CONTAINS(public.geometrie_pays.geometry, public.entites_villes.position_ville) AND (CAST(geometrie_pays.annee_debut AS int)<=CAST(existence_ville.annee_fin AS int) AND CAST(geometrie_pays.annee_fin AS int)>=CAST(existence_ville.annee_debut AS int))
     ''')
     print(f"Inserted rows into pays_ville")
-    # TODO : concatener les éléments dont les id sont les mêmes et les dates se suivent parfaitement
+    # TODO : concatener les éléments dont les id sont les mêmes et les annees se suivent parfaitement
+    # Dans la table pays_ville, concaténer les élements dont les id_entite_pays et id_entite_ville sont les mêmes et les annees se suivent parfaitement
+    concat_pays_ville(connection_new_database)
 
+    # Batch insert for est_capitale
+    find_capitales(connection_new_database)
+
+    connection_new_database.commit()
+
+        
+def find_capitales(connection):
+    cursor = connection.cursor()
     # Batch insert for est_capitale
     # I will do a loop on the table pays_ville
     # I will insert into the table capitales the cities that are capitals with the dates of the capitals
     # The dates will need to be contained in the dates of the cities
     est_capitale_values = [(row["annee_debut"], row["annee_fin"], row["id_element"], row["annee_debut"], row["annee_fin"],) for row in est_capitale]
     cursor.executemany("""
-        INSERT INTO public.capitales (id_pays_ville, date_debut, date_fin)
-        SELECT id_pays_ville, GREATEST(CAST(date_debut AS int), %s), LEAST(CAST(date_fin AS int), %s) FROM public.pays_ville WHERE id_entite_ville = %s AND CAST(date_fin AS int) >= %s AND  CAST(date_debut AS int) <= %s
+        INSERT INTO public.capitales (id_pays_ville, annee_debut, annee_fin)
+        SELECT id_pays_ville, GREATEST(CAST(annee_debut AS int), %s), LEAST(CAST(annee_fin AS int), %s) FROM public.pays_ville WHERE id_entite_ville = %s AND CAST(annee_fin AS int) >= %s AND  CAST(annee_debut AS int) <= %s
     """, est_capitale_values)
     print(f"Inserted {len(est_capitale_values)} rows into capitales")
 
-    connection_new_database.commit()
+    
 
+
+def concat_pays_ville(connection):
+    cursor = connection.cursor()
+
+    # Étape 1 : Identifier les lignes à concaténer
+    cursor.execute("""
+        SELECT t1.id_pays_ville, t1.id_entite_pays, t1.id_entite_ville, t1.annee_debut, t1.annee_fin, t2.id_pays_ville AS id_to_delete
+        FROM pays_ville t1
+        JOIN pays_ville t2 ON t1.id_entite_pays = t2.id_entite_pays
+        AND t1.id_entite_ville = t2.id_entite_ville
+        AND t1.annee_fin + 1 = t2.annee_debut;
+    """)
+    rows_to_concat = cursor.fetchall()
+
+    # Étape 2 : Mettre à jour les lignes
+    for row in rows_to_concat:
+        id_to_keep = row[0]
+        id_to_delete = row[5]
+        new_annee_fin = row[4]  # annee_fin de la ligne à supprimer
+
+        cursor.execute("""
+            UPDATE pays_ville
+            SET annee_fin = %s
+            WHERE id_pays_ville = %s;
+        """, (new_annee_fin, id_to_keep))
+
+    # Étape 3 : Supprimer les lignes redondantes
+    ids_to_delete = [row[5] for row in rows_to_concat]
+    cursor.execute("""
+        DELETE FROM pays_ville
+        WHERE id_pays_ville = ANY(%s);
+    """, (ids_to_delete,))
 
 def main():
     """Main function that calls all the other functions and fills the new database with the data from the old database
@@ -465,6 +507,7 @@ def main():
         return
     try:
         insert_data_into_new_database(connection_new_database, geojson, caracs)
+        
     finally:
         connection_new_database.close()
 
