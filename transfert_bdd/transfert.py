@@ -430,7 +430,8 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
         WHERE ST_CONTAINS(public.geometrie_pays.geometry, public.entites_villes.position_ville) AND (CAST(geometrie_pays.annee_debut AS int)<=CAST(existence_ville.annee_fin AS int) AND CAST(geometrie_pays.annee_fin AS int)>=CAST(existence_ville.annee_debut AS int))
     ''')
     print(f"Inserted rows into pays_ville")
-    # TODO : concatener les éléments dont les id sont les mêmes et les annees se suivent parfaitement
+
+    # Concatener les éléments dont les id sont les mêmes et les annees se suivent parfaitement
     # Dans la table pays_ville, concaténer les élements dont les id_entite_pays et id_entite_ville sont les mêmes et les annees se suivent parfaitement
     concat_pays_ville(connection_new_database)
 
@@ -461,32 +462,63 @@ def concat_pays_ville(connection):
 
     # Étape 1 : Identifier les lignes à concaténer
     cursor.execute("""
-        SELECT t1.id_pays_ville, t1.id_entite_pays, t1.id_entite_ville, t1.annee_debut, t1.annee_fin, t2.id_pays_ville AS id_to_delete
-        FROM pays_ville t1
-        JOIN pays_ville t2 ON t1.id_entite_pays = t2.id_entite_pays
-        AND t1.id_entite_ville = t2.id_entite_ville
-        AND t1.annee_fin + 1 = t2.annee_debut;
+        SELECT id_pays_ville, id_entite_pays, id_entite_ville, annee_debut, annee_fin
+        FROM pays_ville;
     """)
     rows_to_concat = cursor.fetchall()
 
-    # Étape 2 : Mettre à jour les lignes
+    # Etape 2 : Remplissage d'un dictionnaire avec les lignes à concaténer, les clés étant le combo identifiant de pays et de ville
+    rows_to_concat_dict = {}
     for row in rows_to_concat:
-        id_to_keep = row[0]
-        id_to_delete = row[5]
-        new_annee_fin = row[4]  # annee_fin de la ligne à supprimer
+        key = (row[1], row[2])
+        if key not in rows_to_concat_dict:
+            rows_to_concat_dict[key] = []
+        rows_to_concat_dict[key].append(list(row))
 
-        cursor.execute("""
-            UPDATE pays_ville
-            SET annee_fin = %s
-            WHERE id_pays_ville = %s;
-        """, (new_annee_fin, id_to_keep))
+    # Étape 3 : Concaténation des lignes dans un nouveau dictionnaire
+    new_rows_concatenated = []
+    for key, rows in rows_to_concat_dict.items():
+        # Trier les lignes par annee_debut
+        rows.sort(key=lambda x: x[3])
 
-    # Étape 3 : Supprimer les lignes redondantes
-    ids_to_delete = [row[5] for row in rows_to_concat]
+        # Concaténer les lignes dans le nouveau dictionnaire quand les dates se suivent parfaitement
+        new_rows = []
+        for i in range(len(rows) - 1):
+            if new_rows == []:
+                new_rows.append(rows[i])
+            else:
+                for j in range(len(new_rows)):
+                    # Si la date de fin de la ligne i est égale à la date de début de la ligne j - 1, on concatène les lignes. C'est-à-dire que la date de debut de la ligne i est mise à la place de la date de debut de la ligne j
+                    if (rows[i][4] == new_rows[j][3] - 1):
+                        new_rows[j][3] = rows[i][3]
+                        break
+                    # Si la date de début de la ligne i est égale à la date de fin de la ligne j + 1, on concatène les lignes. C'est-à-dire que la date de fin de la ligne i est mise à la place de la date de fin de la ligne j
+                    if (rows[i][3] == new_rows[j][4] + 1):
+                        new_rows[j][4] = rows[i][4]
+                        break
+                    # Si on n'est rentré dans aucun de ces cas là alors on ajoute la ligne i à la liste des lignes
+                    if (j == len(new_rows) - 1):
+                        new_rows.append(rows[i])
+        
+        # Ajouter la dernière ligne
+        new_rows_concatenated.append(new_rows)
+    
+    # Étape 4 : Mettre à jour les lignes en supprimant les anciennes lignes et en les remplaçant par les nouvelles lignes
     cursor.execute("""
-        DELETE FROM pays_ville
-        WHERE id_pays_ville = ANY(%s);
-    """, (ids_to_delete,))
+        DELETE FROM pays_ville;
+    """)
+    print(f"Deleted all rows from pays_ville")
+
+    for rows in new_rows_concatenated:
+        for row in rows:
+            cursor.execute("""
+                INSERT INTO pays_ville (id_entite_pays, id_entite_ville, annee_debut, annee_fin)
+                VALUES (%s, %s, %s, %s);
+            """, (row[1], row[2], row[3], row[4]))
+
+    print(f"Inserted {len(new_rows_concatenated)} rows into pays_ville")
+
+
 
 def main():
     """Main function that calls all the other functions and fills the new database with the data from the old database
@@ -507,6 +539,7 @@ def main():
         return
     try:
         insert_data_into_new_database(connection_new_database, geojson, caracs)
+        # concat_pays_ville(connection_new_database)
         
     finally:
         connection_new_database.close()
