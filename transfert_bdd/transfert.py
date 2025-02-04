@@ -237,10 +237,16 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     print(f"Inserted {len(noms_villes_values)} rows into noms_villes")
 
     # Batch insert for entites_pays
-    entites_pays_values = [(row["id"], row["couleur"],) for row in entites_pays]
+    # Remplir les table metadonnees, contributions, modifications pour entites_pays
+    id_metas, id_modifications = insert_metadonnees_contributions_and_modifications(connection_new_database, id_utilisateur, date, len(entites_pays))
+
+    # Remplir la table entites_pays
+    entites_pays_values = [(row["id"], row["couleur"], 0, 0,) for row in entites_pays]
+    for i in range(len(entites_pays_values)):
+        entites_pays_values[i] = (entites_pays_values[i][0], entites_pays_values[i][1], id_modifications[i], id_metas[i],)
     cursor.executemany("""
-        INSERT INTO public.entites_pays (id_entite_pays, couleur)
-        VALUES (%s, %s)
+        INSERT INTO public.entites_pays (id_entite_pays, couleur, id_modification, id_meta)
+        VALUES (%s, %s, %s, %s)
     """, entites_pays_values)
     print(f"Inserted {len(entites_pays_values)} rows into entites_pays")
 
@@ -275,10 +281,16 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
                 del entites_villes[i]
                 print("646 deleted from entites_villes")
 
-    entites_villes_values = [(row["id_element"], row["valeur"].replace('"geometry": ', ""),) for row in entites_villes]
+    # Remplir les table metadonnees, contributions, modifications pour entites_villes
+    id_metas, id_modifications = insert_metadonnees_contributions_and_modifications(connection_new_database, id_utilisateur, date, len(entites_villes))
+
+    # Remplir la table entites_villes
+    entites_villes_values = [(row["id_element"], row["valeur"].replace('"geometry": ', ""), 0, 0,) for row in entites_villes]
+    for i in range(len(entites_villes_values)):
+        entites_villes_values[i] = (entites_villes_values[i][0], entites_villes_values[i][1], id_modifications[i], id_metas[i],)
     cursor.executemany("""
-        INSERT INTO public.entites_villes (id_entite_ville, position_ville)
-        VALUES (%s, ST_GeomFromGeoJSON(%s))
+        INSERT INTO public.entites_villes (id_entite_ville, position_ville, id_modification, id_meta)
+        VALUES (%s, ST_GeomFromGeoJSON(%s), %s, %s)
     """, entites_villes_values)
     print(f"Inserted {len(entites_villes_values)} rows into entites_villes")
 
@@ -299,16 +311,20 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
         id_periode = cursor.fetchone()[0]
         id_periodes.append(id_periode)
     print(f"Inserted {len(periodes)} rows into periodes")
-    # Remplissage de la table de géométrie
-    geometrie_pays_values = [(row["id_element"], row["valeur"].replace('"geometry": ', ""),0 ) for row in geometrie_pays]
-    for i in range(len(id_periodes)):
-        geometrie_pays_values[i] = (geometrie_pays_values[i][0], geometrie_pays_values[i][1], id_periodes[i][0])
 
-    # cursor.executemany("""
-    #     INSERT INTO public.geometrie_pays (id_entite_pays, annee_debut, annee_fin, geometry)
-    #     VALUES (%s, %s, %s, ST_GeomFromGeoJSON(%s))
-    # """, geometrie_pays_values)
-    # print(f"Inserted {len(geometrie_pays_values)} rows into geometrie_pays")
+    # Remplir les table metadonnees, contributions, modifications pour geometrie_pays
+    id_metas, id_modifications = insert_metadonnees_contributions_and_modifications(connection_new_database, id_utilisateur, date, len(geometrie_pays))
+
+    # Remplissage de la table de géométrie
+    geometrie_pays_values = [(row["id_element"], row["valeur"].replace('"geometry": ', ""),0 ,0 ,0 ,) for row in geometrie_pays]
+    for i in range(len(geometrie_pays_values)):
+        geometrie_pays_values[i] = (geometrie_pays_values[i][0], geometrie_pays_values[i][1], id_periodes[i], id_modifications[i], id_metas[i],)
+
+    cursor.executemany("""
+        INSERT INTO public.geometrie_pays (id_entite_pays, geometrie, id_periode, id_modification, id_meta)
+        VALUES (%s, ST_GeomFromGeoJSON(%s), %s, %s, %s)
+    """, geometrie_pays_values)
+    print(f"Inserted {len(geometrie_pays_values)} rows into geometrie_pays")
 
     # # Batch insert for population_pays
     # population_pays_values = [(row["id_element"], row["annee_debut"], row["valeur"],) for row in population_pays]
