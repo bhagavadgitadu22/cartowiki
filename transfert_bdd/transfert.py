@@ -531,28 +531,57 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     # """, wikipedia_villes_values)
     # print(f"Inserted {len(wikipedia_villes_values)} rows into wikipedia_ville")
 
-    # Batch insert pays_ville (the table where we store in which countries are the cities)
-    # ST_CONTAINS
-    # I will do an union of tables (entites_pays JOIN geometrie_pays) and (entites_villes JOIN existence_ville) to get the countries of the cities
-    # I will do a loop on the cities and for each city I will do a loop on the countries to see if the city is in the country using ST_CONTAINS
-    # I will also have to check the dates first
-    cursor.execute('''
-        INSERT INTO public.pays_ville (id_entite_pays, id_entite_ville, annee_debut, annee_fin) 
-        SELECT entites_pays.id_entite_pays, entites_villes.id_entite_ville, 
-        GREATEST(CAST(geometrie_pays.annee_debut AS int), CAST(existence_ville.annee_debut AS int)) AS annee_debut,
-        LEAST(CAST(geometrie_pays.annee_fin AS int), CAST(existence_ville.annee_fin AS int)) AS annee_fin
-        FROM public.geometrie_pays JOIN public.entites_pays ON public.geometrie_pays.id_entite_pays = public.entites_pays.id_entite_pays, 
-        public.existence_ville JOIN public.entites_villes ON public.existence_ville.id_entite_ville = public.entites_villes.id_entite_ville 
-        WHERE ST_CONTAINS(public.geometrie_pays.geometry, public.entites_villes.position_ville) AND (CAST(geometrie_pays.annee_debut AS int)<=CAST(existence_ville.annee_fin AS int) AND CAST(geometrie_pays.annee_fin AS int)>=CAST(existence_ville.annee_debut AS int))
-    ''')
-    print(f"Inserted rows into pays_ville")
+    # # Batch insert pays_ville (the table where we store in which countries are the cities)
+    # # ST_CONTAINS
+    # # I will do an union of tables (entites_pays JOIN geometrie_pays) and (entites_villes JOIN existence_ville) to get the countries of the cities
+    # # I will do a loop on the cities and for each city I will do a loop on the countries to see if the city is in the country using ST_CONTAINS
+    # # I will also have to check the dates first
+    # cursor.execute('''
+    #     SELECT entites_pays.id_entite_pays, entites_villes.id_entite_ville, 
+    #     GREATEST(CAST(periodes_pays.annee_debut AS int), CAST(periodes_ville.annee_debut AS int)) AS annee_debut,
+    #     LEAST(CAST(periodes_pays.annee_fin AS int), CAST(periodes_ville.annee_fin AS int)) AS annee_fin
+    #     FROM public.geometrie_pays JOIN public.entites_pays ON public.geometrie_pays.id_entite_pays = public.entites_pays.id_entite_pays
+    #     JOIN public.periodes AS periodes_pays ON public.geometrie_pays.id_periode = periodes_pays.id_periode, 
+    #     public.existence_ville JOIN public.entites_villes ON public.existence_ville.id_entite_ville = public.entites_villes.id_entite_ville 
+    #     JOIN public.periodes AS periodes_ville ON public.existence_ville.id_periode = periodes_ville.id_periode
+    #     WHERE ST_CONTAINS(public.geometrie_pays.geometrie, public.entites_villes.position_ville) AND (CAST(periodes_pays.annee_debut AS int)<=CAST(periodes_ville.annee_fin AS int) AND CAST(periodes_pays.annee_fin AS int)>=CAST(periodes_ville.annee_debut AS int))
+    # ''')
+    # pays_ville = cursor.fetchall()
 
-    # Concatener les éléments dont les id sont les mêmes et les annees se suivent parfaitement
-    # Dans la table pays_ville, concaténer les élements dont les id_entite_pays et id_entite_ville sont les mêmes et les annees se suivent parfaitement
-    concat_pays_ville(connection_new_database)
+    # # Remplir la table metadonnees, contributions, modifications pour pays_ville
+    # id_metas, id_modifications = insert_metadonnees_contributions_and_modifications(connection_new_database, id_utilisateur, date, len(pays_ville))
+
+    # # Remplir la table periode pour pays_ville
+    # periodes = [(row[2], row[3], ) for row in pays_ville]
+    # id_periodes = []
+    # for periode in periodes:
+    #     cursor.execute("""
+    #         INSERT INTO public.periodes (annee_debut, annee_fin)
+    #         VALUES (%s, %s)
+    #         RETURNING id_periode
+    #     """, periode)
+    #     id_periode = cursor.fetchone()[0]
+    #     id_periodes.append(id_periode)
+    # print(f"Inserted {len(periodes)} rows into periodes")
+
+    # # Remplir la table pays_ville
+    # pays_ville_values = [(row[0], row[1], row[2], row[3], 0, 0, 0,) for row in pays_ville]
+    # for i in range(len(pays_ville_values)):
+    #     pays_ville_values[i] = (pays_ville_values[i][0], pays_ville_values[i][1], id_periodes[i], id_modifications[i], id_metas[i],)
+    # print(f"Inserted rows into pays_ville")
+
+    # cursor.executemany("""
+    #     INSERT INTO public.pays_ville (id_entite_pays, id_entite_ville, id_periode, id_modification, id_meta)
+    #     VALUES (%s, %s, %s, %s, %s)
+    # """, pays_ville_values)
+    # print(f"Inserted {len(pays_ville_values)} rows into pays_ville")
+
+    # # Concatener les éléments dont les id sont les mêmes et les annees se suivent parfaitement
+    # # Dans la table pays_ville, concaténer les élements dont les id_entite_pays et id_entite_ville sont les mêmes et les annees se suivent parfaitement
+    # concat_pays_ville(connection_new_database, id_utilisateur, date)
 
     # Batch insert for est_capitale
-    find_capitales(connection_new_database)
+    find_capitales(connection_new_database, id_utilisateur, date)
 
     connection_new_database.commit()
     cursor.close()
@@ -629,15 +658,16 @@ def insert_periodes(connection, donnees_a_inserer):
 
 
 
-def concat_pays_ville(connection):
+def concat_pays_ville(connection, id_utilisateur, date):
     cursor = connection.cursor()
 
     # Étape 1 : Identifier les lignes à concaténer
     cursor.execute("""
-        SELECT id_pays_ville, id_entite_pays, id_entite_ville, annee_debut, annee_fin
-        FROM pays_ville;
+        SELECT id_pays_ville, id_entite_pays, id_entite_ville, periodes.annee_debut, periodes.annee_fin, periodes.id_periode, id_modification, id_meta
+        FROM pays_ville JOIN periodes ON pays_ville.id_periode = periodes.id_periode;
     """)
     rows_to_concat = cursor.fetchall()
+    print(f"Found {len(rows_to_concat)} rows to concatenate")
 
     # Etape 2 : Remplissage d'un dictionnaire avec les lignes à concaténer, les clés étant le combo identifiant de pays et de ville
     rows_to_concat_dict = {}
@@ -646,8 +676,9 @@ def concat_pays_ville(connection):
         if key not in rows_to_concat_dict:
             rows_to_concat_dict[key] = []
         rows_to_concat_dict[key].append(list(row))
+    print(f"Filled a dictionary with {len(rows_to_concat_dict)} keys")
 
-    # Étape 3 : Concaténation des lignes dans un nouveau dictionnaire
+    # Étape 3 : Concaténation des lignes dans une nouvelle liste
     new_rows_concatenated = []
     for key, rows in rows_to_concat_dict.items():
         # Trier les lignes par annee_debut
@@ -674,36 +705,111 @@ def concat_pays_ville(connection):
         
         # Ajouter la dernière ligne
         new_rows_concatenated.append(new_rows)
+    print(f"Concatenated {len(new_rows_concatenated)} rows")
     
     # Étape 4 : Mettre à jour les lignes en supprimant les anciennes lignes et en les remplaçant par les nouvelles lignes
-    cursor.execute("""
-        DELETE FROM pays_ville;
-    """)
-    print(f"Deleted all rows from pays_ville")
+    # Supprimer d'abord les lignes correspondantes dans les tables modifications, contributions, metadonnees et periodes
+    compteur = 0
+    for row in rows_to_concat:
+        cursor.execute("""
+            DELETE FROM pays_ville WHERE id_pays_ville = %s;
+        """, (row[0],))
+        cursor.execute("""
+            DELETE FROM modifications WHERE id_modification = %s;
+        """, (row[6],))
+        cursor.execute("""
+            DELETE FROM contributions WHERE id_meta = %s;
+        """, (row[7],))
+        cursor.execute("""
+            DELETE FROM metadonnees WHERE id_meta = %s;
+        """, (row[7],))
+        cursor.execute("""
+            DELETE FROM periodes WHERE id_periode = %s;
+        """, (row[5],))
+        compteur += 1
+        if compteur % 1000 == 0:
+            print(f"Deleted {compteur} rows from modifications, contributions, metadonnees, periodes and pays_ville")
+    print(f"Deleted {len(rows_to_concat)} rows from modifications, contributions, metadonnees, periodes and pays_ville")
 
+    # Remplir une liste avec les nouvelles lignes concaténées
+    simple_list_new_rows_concatenated = []
     for rows in new_rows_concatenated:
         for row in rows:
-            cursor.execute("""
-                INSERT INTO pays_ville (id_entite_pays, id_entite_ville, annee_debut, annee_fin)
-                VALUES (%s, %s, %s, %s);
-            """, (row[1], row[2], row[3], row[4]))
+            simple_list_new_rows_concatenated.append(row)
 
-    print(f"Inserted {len(new_rows_concatenated)} rows into pays_ville")
+    # Remplir les tables modifications, contributions, metadonnees et periodes avec les nouvelles lignes
+    id_metas, id_modifications = insert_metadonnees_contributions_and_modifications(connection, id_utilisateur, date, len(simple_list_new_rows_concatenated))
+
+    periodes = [(row[3], row[4], ) for row in simple_list_new_rows_concatenated]
+    id_periodes = []
+    for periode in periodes:
+        cursor.execute("""
+            INSERT INTO public.periodes (annee_debut, annee_fin)
+            VALUES (%s, %s)
+            RETURNING id_periode
+        """, periode)
+        id_periode = cursor.fetchone()[0]
+        id_periodes.append(id_periode)
+    print(f"Inserted {len(periodes)} rows into periodes")
+
+    # Remplir la table pays_ville
+    new_rows_concatenated_values = [(row[1], row[2], 0, 0, 0,) for row in simple_list_new_rows_concatenated]
+    for i in range(len(new_rows_concatenated_values)):
+        new_rows_concatenated_values[i] = (new_rows_concatenated_values[i][0], new_rows_concatenated_values[i][1], id_periodes[i], id_modifications[i], id_metas[i],)
+    cursor.executemany("""
+        INSERT INTO public.pays_ville (id_entite_pays, id_entite_ville, id_periode, id_modification, id_meta)
+        VALUES (%s, %s, %s, %s, %s)
+    """, new_rows_concatenated_values)
+    print(f"Inserted {len(new_rows_concatenated_values)} rows into pays_ville")
 
     cursor.close()
 
 
 
-def find_capitales(connection):
+def find_capitales(connection, id_utilisateur, date):
     cursor = connection.cursor()
     # Batch insert for est_capitale
     # I will do a loop on the table pays_ville
     # I will insert into the table capitales the cities that are capitals with the dates of the capitals
     # The dates will need to be contained in the dates of the cities
-    est_capitale_values = [(row["annee_debut"], row["annee_fin"], row["id_element"], row["annee_debut"], row["annee_fin"],) for row in est_capitale]
+    first_est_capitale_values = [(row["annee_debut"], row["annee_fin"], row["id_element"], row["annee_debut"], row["annee_fin"],) for row in est_capitale]
+    est_capitale_values = []
+    for capitale in first_est_capitale_values:
+        cursor.execute("""
+            SELECT id_pays_ville, 
+            GREATEST(CAST(public.periodes.annee_debut AS int), %s), 
+            LEAST(CAST(public.periodes.annee_fin AS int), %s) 
+            FROM public.pays_ville 
+            JOIN public.periodes ON public.pays_ville.id_periode = public.periodes.id_periode
+            WHERE id_entite_ville = %s AND CAST(public.periodes.annee_fin AS int) >= %s AND  CAST(public.periodes.annee_debut AS int) <= %s
+        """, capitale)
+        capitale_result = cursor.fetchone()
+        if capitale_result is not None:
+            est_capitale_values.append(capitale_result)
+    print(f"Found {len(est_capitale_values)} rows for est_capitale")
+
+    # Remplir les tables modifications, contributions, metadonnees et periodes avec les nouvelles lignes
+    id_metas, id_modifications = insert_metadonnees_contributions_and_modifications(connection, id_utilisateur, date, len(est_capitale_values))
+
+    periodes = [(row[1], row[2], ) for row in est_capitale_values]
+    id_periodes = []
+    for periode in periodes:
+        cursor.execute("""
+            INSERT INTO public.periodes (annee_debut, annee_fin)
+            VALUES (%s, %s)
+            RETURNING id_periode
+        """, periode)
+        id_periode = cursor.fetchone()[0]
+        id_periodes.append(id_periode)
+    print(f"Inserted {len(periodes)} rows into periodes")
+
+    # Remplir la table capitales
+    est_capitale_values = [(row[0], 0, 0, 0,) for row in est_capitale_values]
+    for i in range(len(est_capitale_values)):
+        est_capitale_values[i] = (est_capitale_values[i][0], id_periodes[i], id_modifications[i], id_metas[i],)
     cursor.executemany("""
-        INSERT INTO public.capitales (id_pays_ville, annee_debut, annee_fin)
-        SELECT id_pays_ville, GREATEST(CAST(annee_debut AS int), %s), LEAST(CAST(annee_fin AS int), %s) FROM public.pays_ville WHERE id_entite_ville = %s AND CAST(annee_fin AS int) >= %s AND  CAST(annee_debut AS int) <= %s
+        INSERT INTO public.capitales (id_pays_ville, id_periode, id_modification, id_meta)
+        VALUES (%s, %s, %s, %s)
     """, est_capitale_values)
     print(f"Inserted {len(est_capitale_values)} rows into capitales")
 
