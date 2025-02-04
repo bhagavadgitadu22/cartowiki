@@ -212,27 +212,8 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # Batch insert for noms_pays TODO : don't insert twice the same name
-    # Remplir la table metadonnees pour noms_pays
-    id_metas = []
-    for _ in range(len(noms_pays)):
-        cursor.execute(f"INSERT INTO public.metadonnees DEFAULT VALUES RETURNING id_meta")
-        id_meta = cursor.fetchone()[0]
-        id_metas.append(id_meta)
-    print(f"Inserted {len(id_metas)} rows into metadonnees")
-    print(id_metas)
-
-    # Remplir la table contributions
-    for i in range(len(noms_pays)):
-        cursor.execute(f"INSERT INTO public.contributions (id_utilisateur, id_meta, date) VALUES (%s, %s, %s)", (id_utilisateur, id_metas[i], date))
-    print(f"Inserted {len(id_metas)} rows into contributions")
-
-    # Remplir la table modifications
-    id_modifications = []
-    for i in range(len(noms_pays)):
-        cursor.execute(f"INSERT INTO public.modifications DEFAULT VALUES RETURNING id_modification")
-        id_modification = cursor.fetchone()[0]
-        id_modifications.append(id_modification)
-    print(f"Inserted {len(id_modifications)} rows into modifications")
+    # Remplir les table metadonnees, contributions, modifications pour noms_pays
+    id_metas, id_modifications = insert_metadonnees_contributions_and_modifications(connection_new_database, id_utilisateur, date, len(noms_pays))
 
     # Remplir la table noms_pays
     noms_pays_values = [(row["valeur"], 0, 0,) for row in noms_pays]
@@ -242,10 +223,16 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     print(f"Inserted {len(noms_pays_values)} rows into noms_pays")
     
     # Batch insert for noms_villes TODO : don't insert twice the same name
-    noms_villes_values = [(row["valeur"],) for row in noms_villes]
+    # Remplir les table metadonnees, contributions, modifications pour noms_villes
+    id_metas, id_modifications = insert_metadonnees_contributions_and_modifications(connection_new_database, id_utilisateur, date, len(noms_villes))
+
+    # Remplir la table noms_villes
+    noms_villes_values = [(row["valeur"], 0, 0) for row in noms_villes]
+    for i in range(len(noms_villes_values)):
+        noms_villes_values[i] = (noms_villes_values[i][0], id_modifications[i], id_metas[i],)
     cursor.executemany("""
-        INSERT INTO public.noms_villes (nom_ville)
-        VALUES (%s)
+        INSERT INTO public.noms_villes (nom_ville, id_modification, id_meta)
+        VALUES (%s, %s, %s)
     """, noms_villes_values)
     print(f"Inserted {len(noms_villes_values)} rows into noms_villes")
 
@@ -302,12 +289,15 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     #     periode = (geometrie_pays_values[i][1], geometrie_pays_values[i][2])
     #     if periode not in periodes:
     #         periodes.append(periode)
-    cursor.executemany("""
-        INSERT INTO public.periodes (annee_debut, annee_fin)
-        VALUES (%s, %s)
-        RETURNING id_periode
-    """, periodes)
-    id_periodes = cursor.fetchall()
+    id_periodes = []
+    for periode in periodes:
+        cursor.execute("""
+            INSERT INTO public.periodes (annee_debut, annee_fin)
+            VALUES (%s, %s)
+            RETURNING id_periode
+        """, periode)
+        id_periode = cursor.fetchone()[0]
+        id_periodes.append(id_periode)
     print(f"Inserted {len(periodes)} rows into periodes")
     # Remplissage de la table de géométrie
     geometrie_pays_values = [(row["id_element"], row["valeur"].replace('"geometry": ', ""),0 ) for row in geometrie_pays]
@@ -494,21 +484,52 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
 
     connection_new_database.commit()
 
-        
-def find_capitales(connection):
-    cursor = connection.cursor()
-    # Batch insert for est_capitale
-    # I will do a loop on the table pays_ville
-    # I will insert into the table capitales the cities that are capitals with the dates of the capitals
-    # The dates will need to be contained in the dates of the cities
-    est_capitale_values = [(row["annee_debut"], row["annee_fin"], row["id_element"], row["annee_debut"], row["annee_fin"],) for row in est_capitale]
-    cursor.executemany("""
-        INSERT INTO public.capitales (id_pays_ville, annee_debut, annee_fin)
-        SELECT id_pays_ville, GREATEST(CAST(annee_debut AS int), %s), LEAST(CAST(annee_fin AS int), %s) FROM public.pays_ville WHERE id_entite_ville = %s AND CAST(annee_fin AS int) >= %s AND  CAST(annee_debut AS int) <= %s
-    """, est_capitale_values)
-    print(f"Inserted {len(est_capitale_values)} rows into capitales")
 
-    
+
+def insert_metadonnees_contributions_and_modifications(connection, id_utilisateur, date, length):
+    id_metas = insert_metadonnees_and_contributions(connection, id_utilisateur, date, length)
+
+    id_modifications = insert_modifications(connection, length)
+
+    return id_metas, id_modifications
+
+
+
+def insert_metadonnees_and_contributions(connection, id_utilisateur, date, length):
+    cursor = connection.cursor()
+    # Batch insert for metadonnees
+    id_metas = []
+    for _ in range(length):
+        cursor.execute("""
+            INSERT INTO public.metadonnees DEFAULT VALUES RETURNING id_meta
+        """)
+        id_meta = cursor.fetchone()[0]  # Fetch the result and get the first column
+        id_metas.append(id_meta)
+    print(f"Inserted {length} rows into metadonnees")
+
+    # Batch insert for contributions
+    cursor.executemany("""
+        INSERT INTO public.contributions (id_utilisateur, id_meta, date)
+        VALUES (%s, %s, %s)
+    """, [(id_utilisateur, id_metas[i], date) for i in range(length)])
+    print(f"Inserted {length} rows into contributions")
+    return id_metas
+
+
+
+def insert_modifications(connection, length):
+    cursor = connection.cursor()
+    # Batch insert for modifications
+    id_modifications = []
+    for _ in range(length):
+        cursor.execute("""
+            INSERT INTO public.modifications DEFAULT VALUES RETURNING id_modification
+        """)
+        id_modification = cursor.fetchone()[0]
+        id_modifications.append(id_modification)
+    print(f"Inserted {length} rows into modifications")
+    return id_modifications
+
 
 
 def concat_pays_ville(connection):
@@ -571,6 +592,21 @@ def concat_pays_ville(connection):
             """, (row[1], row[2], row[3], row[4]))
 
     print(f"Inserted {len(new_rows_concatenated)} rows into pays_ville")
+
+
+
+def find_capitales(connection):
+    cursor = connection.cursor()
+    # Batch insert for est_capitale
+    # I will do a loop on the table pays_ville
+    # I will insert into the table capitales the cities that are capitals with the dates of the capitals
+    # The dates will need to be contained in the dates of the cities
+    est_capitale_values = [(row["annee_debut"], row["annee_fin"], row["id_element"], row["annee_debut"], row["annee_fin"],) for row in est_capitale]
+    cursor.executemany("""
+        INSERT INTO public.capitales (id_pays_ville, annee_debut, annee_fin)
+        SELECT id_pays_ville, GREATEST(CAST(annee_debut AS int), %s), LEAST(CAST(annee_fin AS int), %s) FROM public.pays_ville WHERE id_entite_ville = %s AND CAST(annee_fin AS int) >= %s AND  CAST(annee_debut AS int) <= %s
+    """, est_capitale_values)
+    print(f"Inserted {len(est_capitale_values)} rows into capitales")
 
 
 
