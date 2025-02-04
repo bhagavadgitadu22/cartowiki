@@ -343,49 +343,49 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     # """, existence_villes_values)
     # print(f"Inserted {len(existence_villes_values)} rows into existence_ville")
     
-    # for i in range(len(population_villes)-1, -1, -1):
-    #     if (population_villes[i]["id_element"] == 837):
-    #         del population_villes[i]
-    #         print("837 deleted from population_villes")
-    #     if (population_villes[i]["id_element"] == 1057):
-    #         del population_villes[i]
-    #         print("1057 deleted from population_villes")
-    #     if (population_villes[i]["id_element"] == 1730):
-    #         del population_villes[i]
-    #         print("1730 deleted from population_villes")
+    for i in range(len(population_villes)-1, -1, -1):
+        if (population_villes[i]["id_element"] == 837):
+            del population_villes[i]
+            print("837 deleted from population_villes")
+        if (population_villes[i]["id_element"] == 1057):
+            del population_villes[i]
+            print("1057 deleted from population_villes")
+        if (population_villes[i]["id_element"] == 1730):
+            del population_villes[i]
+            print("1730 deleted from population_villes")
     
-    # for i in range(len(noms_villes)-1, -1, -1):
-    #     if (noms_villes[i]["id_element"] == 837):
-    #         del noms_villes[i]
-    #         print("837 deleted from noms_villes")
-    #     if (noms_villes[i]["id_element"] == 1057):
-    #         del noms_villes[i]
-    #         print("1057 deleted from noms_villes")
-    #     if (noms_villes[i]["id_element"] == 1730):
-    #         del noms_villes[i]
-    #         print("1730 deleted from noms_villes")
+    for i in range(len(noms_villes)-1, -1, -1):
+        if (noms_villes[i]["id_element"] == 837):
+            del noms_villes[i]
+            print("837 deleted from noms_villes")
+        if (noms_villes[i]["id_element"] == 1057):
+            del noms_villes[i]
+            print("1057 deleted from noms_villes")
+        if (noms_villes[i]["id_element"] == 1730):
+            del noms_villes[i]
+            print("1730 deleted from noms_villes")
     
-    # for i in range(len(sources_villes)-1, -1, -1):
-    #     if (sources_villes[i]["id_element"] == 837):
-    #         del sources_villes[i]
-    #         print("837 deleted from sources_villes")
-    #     if (sources_villes[i]["id_element"] == 1057):
-    #         del sources_villes[i]
-    #         print("1057 deleted from sources_villes")
-    #     if (sources_villes[i]["id_element"] == 1730):
-    #         del sources_villes[i]
-    #         print("1730 deleted from sources_villes")
+    for i in range(len(sources_villes)-1, -1, -1):
+        if (sources_villes[i]["id_element"] == 837):
+            del sources_villes[i]
+            print("837 deleted from sources_villes")
+        if (sources_villes[i]["id_element"] == 1057):
+            del sources_villes[i]
+            print("1057 deleted from sources_villes")
+        if (sources_villes[i]["id_element"] == 1730):
+            del sources_villes[i]
+            print("1730 deleted from sources_villes")
 
-    # for i in range(len(wikipedia_villes)-1, -1, -1):
-    #     if (wikipedia_villes[i]["id_element"] == 837):
-    #         del wikipedia_villes[i]
-    #         print("837 deleted from wikipedia_villes")
-    #     if (wikipedia_villes[i]["id_element"] == 1057):
-    #         del wikipedia_villes[i]
-    #         print("1057 deleted from wikipedia_villes")
-    #     if (wikipedia_villes[i]["id_element"] == 1730):
-    #         del wikipedia_villes[i]
-    #         print("1730 deleted from wikipedia_villes")
+    for i in range(len(wikipedia_villes)-1, -1, -1):
+        if (wikipedia_villes[i]["id_element"] == 837):
+            del wikipedia_villes[i]
+            print("837 deleted from wikipedia_villes")
+        if (wikipedia_villes[i]["id_element"] == 1057):
+            del wikipedia_villes[i]
+            print("1057 deleted from wikipedia_villes")
+        if (wikipedia_villes[i]["id_element"] == 1730):
+            del wikipedia_villes[i]
+            print("1730 deleted from wikipedia_villes")
 
 
     # # Batch insert for population_villes
@@ -429,129 +429,130 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     # """, pays_values)
     # print(f"Inserted {len(pays_values)} rows into pays")
 
-    # Batch update for sources_pays
-    sources_pays_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in sources_pays]
-    query = """
-        UPDATE public.contributions
-        SET sources = %s
-        WHERE id_meta IN (
-            SELECT public.pays.id_meta
-            FROM public.pays
-            JOIN public.periodes ON public.pays.id_periode = public.periodes.id_periode
-            WHERE public.pays.id_entite_pays = %s
-            AND (
-                (CAST(public.periodes.annee_debut AS int) <= %s AND CAST(public.periodes.annee_fin AS int) >= %s)
-                OR (CAST(public.periodes.annee_debut AS int) <= %s AND CAST(public.periodes.annee_fin AS int) >= %s)
-            )
-        );
-    """
-    cursor.executemany(query, sources_pays_values)
-    # cursor.executemany(query, sources_pays_values)
-    print(f"Inserted {len(sources_pays_values)} rows into sources_pays")
-    # Test : Ca fonctionne quand je rentre ça a la main dans pgAdmin
-    # UPDATE public.contributions
-    # SET sources = 'yo'
-    # WHERE id_meta IN (SELECT id_meta
-    #     FROM public.pays
-    #     JOIN public.periodes ON public.pays.id_periode = public.periodes.id_periode
-    #     WHERE public.pays.id_entite_pays = 23
-    #     AND (
-    #         (CAST(public.periodes.annee_debut AS int) <= 0 AND CAST(public.periodes.annee_fin AS int) >= 0)
-    #         OR (CAST(public.periodes.annee_debut AS int) <= 0 AND CAST(public.periodes.annee_fin AS int) >= 0)
-    #     )
-    # 	)
-
-    # SELECT sources FROM public.contributions
-    #     WHERE id_meta IN (SELECT id_meta
+    # # Batch update for sources_pays
+    # sources_pays_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in sources_pays]
+    # query = """
+    #     UPDATE public.contributions
+    #     SET sources = %s
+    #     WHERE id_meta IN (
+    #         SELECT public.pays.id_meta
     #         FROM public.pays
     #         JOIN public.periodes ON public.pays.id_periode = public.periodes.id_periode
-    #         WHERE public.pays.id_entite_pays = 23
+    #         WHERE public.pays.id_entite_pays = %s
     #         AND (
-    #             (CAST(public.periodes.annee_debut AS int) <= 0 AND CAST(public.periodes.annee_fin AS int) >= 0)
-    #             OR (CAST(public.periodes.annee_debut AS int) <= 0 AND CAST(public.periodes.annee_fin AS int) >= 0)
+    #             (CAST(public.periodes.annee_debut AS int) <= %s AND CAST(public.periodes.annee_fin AS int) >= %s)
+    #             OR (CAST(public.periodes.annee_debut AS int) <= %s AND CAST(public.periodes.annee_fin AS int) >= %s)
     #         )
-	# 		)
+    #     );
+    # """
+    # cursor.executemany(query, sources_pays_values)
+    # # cursor.executemany(query, sources_pays_values)
+    # print(f"Inserted {len(sources_pays_values)} rows into sources_pays")
 
-    # Batch insert for wikipedia_pays
-    wikipedia_pays_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in wikipedia_pays]
-    cursor.executemany("""
-        UPDATE public.metadonnees
-        SET wikipedia = %s
-        WHERE id_meta IN (
-            SELECT public.pays.id_meta
-            FROM public.pays
-            JOIN public.periodes ON public.pays.id_periode = public.periodes.id_periode
-            WHERE public.pays.id_entite_pays = %s
-            AND (
-                (CAST(public.periodes.annee_debut AS int) <= %s AND CAST(public.periodes.annee_fin AS int) >= %s)
-                OR (CAST(public.periodes.annee_debut AS int) <= %s AND CAST(public.periodes.annee_fin AS int) >= %s)
-            )
-        );
-    """, wikipedia_pays_values)
-    print(f"Inserted {len(wikipedia_pays_values)} rows into wikipedia_pays")
 
-    # Fetch the noms_villes table to get the id_nom_ville according to each nom_ville
-    cursor.execute('SELECT * FROM public.noms_villes')
-    noms_villes_new_bdd = cursor.fetchall()
-    # insert a column into noms_villes to store the id_nom_ville
-    for i in range(len(noms_villes)):
-        for j in range(len(noms_villes_new_bdd)):
-            if (noms_villes[i]["valeur"] == noms_villes_new_bdd[j][1]):
-                noms_villes[i]["id_nom_ville"] = noms_villes_new_bdd[j][0]
-                break
+    # # Batch insert for wikipedia_pays
+    # wikipedia_pays_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in wikipedia_pays]
+    # cursor.executemany("""
+    #     UPDATE public.metadonnees
+    #     SET wikipedia = %s
+    #     WHERE id_meta IN (
+    #         SELECT public.pays.id_meta
+    #         FROM public.pays
+    #         JOIN public.periodes ON public.pays.id_periode = public.periodes.id_periode
+    #         WHERE public.pays.id_entite_pays = %s
+    #         AND (
+    #             (CAST(public.periodes.annee_debut AS int) <= %s AND CAST(public.periodes.annee_fin AS int) >= %s)
+    #             OR (CAST(public.periodes.annee_debut AS int) <= %s AND CAST(public.periodes.annee_fin AS int) >= %s)
+    #         )
+    #     );
+    # """, wikipedia_pays_values)
+    # print(f"Inserted {len(wikipedia_pays_values)} rows into wikipedia_pays")
 
-    # Batch insert for villes
-    villes_values = [(row["id_element"], row["id_nom_ville"], row["annee_debut"], row["annee_fin"] ) for row in noms_villes]
-    cursor.executemany("""
-        INSERT INTO public.ville (id_entite_ville, id_nom_ville, annee_debut, annee_fin)
-        VALUES (%s, %s, %s, %s)
-    """, villes_values)
-    print(f"Inserted {len(villes_values)} rows into villes")
+    # # Fetch the noms_villes table to get the id_nom_ville according to each nom_ville
+    # cursor.execute('SELECT * FROM public.noms_villes')
+    # noms_villes_new_bdd = cursor.fetchall()
+    # # insert a column into noms_villes to store the id_nom_ville
+    # for i in range(len(noms_villes)):
+    #     for j in range(len(noms_villes_new_bdd)):
+    #         if (noms_villes[i]["valeur"] == noms_villes_new_bdd[j][1]):
+    #             noms_villes[i]["id_nom_ville"] = noms_villes_new_bdd[j][0]
+    #             break
 
-    # Batch update for sources_villes
-    sources_villes_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in sources_villes]
-    cursor.executemany("""
-        UPDATE public.ville
-        SET sources = %s
-        WHERE id_entite_ville = %s
-        AND ((CAST(annee_debut AS int) <= %s AND CAST(annee_fin AS int) >= %s)
-        OR (CAST(annee_debut AS int) <= %s AND CAST(annee_fin AS int) >= %s))
-    """, sources_villes_values)
-    print(f"Inserted {len(sources_villes_values)} rows into sources_villes")
+    # # Batch insert for villes
+    # # Remplir les table metadonnees, contributions, modifications pour villes
+    # id_metas, id_modifications = insert_metadonnees_contributions_and_modifications(connection_new_database, id_utilisateur, date, len(noms_villes))
 
-    # Batch insert for wikipedia_ville
-    wikipedia_villes_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in wikipedia_villes]
-    cursor.executemany("""
-        UPDATE public.ville
-        SET wikipedia = %s
-        WHERE id_entite_ville = %s
-        AND ((CAST(annee_debut AS int) <= %s AND CAST(annee_fin AS int) >= %s)
-        OR (CAST(annee_debut AS int) <= %s AND CAST(annee_fin AS int) >= %s))
-    """, wikipedia_villes_values)
-    print(f"Inserted {len(wikipedia_villes_values)} rows into wikipedia_ville")
+    # # Remplir la table periode
+    # id_periodes = insert_periodes(connection_new_database, noms_villes)
 
-    # # Batch insert pays_ville (the table where we store in which countries are the cities)
-    # # ST_CONTAINS
-    # # I will do an union of tables (entites_pays JOIN geometrie_pays) and (entites_villes JOIN existence_ville) to get the countries of the cities
-    # # I will do a loop on the cities and for each city I will do a loop on the countries to see if the city is in the country using ST_CONTAINS
-    # # I will also have to check the dates first
-    # cursor.execute('''
-    #     INSERT INTO public.pays_ville (id_entite_pays, id_entite_ville, annee_debut, annee_fin) 
-    #     SELECT entites_pays.id_entite_pays, entites_villes.id_entite_ville, 
-    #     GREATEST(CAST(geometrie_pays.annee_debut AS int), CAST(existence_ville.annee_debut AS int)) AS annee_debut,
-    #     LEAST(CAST(geometrie_pays.annee_fin AS int), CAST(existence_ville.annee_fin AS int)) AS annee_fin
-    #     FROM public.geometrie_pays JOIN public.entites_pays ON public.geometrie_pays.id_entite_pays = public.entites_pays.id_entite_pays, 
-    #     public.existence_ville JOIN public.entites_villes ON public.existence_ville.id_entite_ville = public.entites_villes.id_entite_ville 
-    #     WHERE ST_CONTAINS(public.geometrie_pays.geometry, public.entites_villes.position_ville) AND (CAST(geometrie_pays.annee_debut AS int)<=CAST(existence_ville.annee_fin AS int) AND CAST(geometrie_pays.annee_fin AS int)>=CAST(existence_ville.annee_debut AS int))
-    # ''')
-    # print(f"Inserted rows into pays_ville")
+    # # Remplir la table villes
+    # villes_values = [(row["id_element"], row["id_nom_ville"], 0, 0, 0, ) for row in noms_villes]
+    # for i in range(len(villes_values)):
+    #     villes_values[i] = (villes_values[i][0], villes_values[i][1], id_periodes[i], id_modifications[i], id_metas[i],)
+    # cursor.executemany("""
+    #     INSERT INTO public.ville (id_entite_ville, id_nom_ville, id_periode, id_modification, id_meta)
+    #     VALUES (%s, %s, %s, %s, %s)
+    # """, villes_values)
+    # print(f"Inserted {len(villes_values)} rows into villes")
 
-    # # Concatener les éléments dont les id sont les mêmes et les annees se suivent parfaitement
-    # # Dans la table pays_ville, concaténer les élements dont les id_entite_pays et id_entite_ville sont les mêmes et les annees se suivent parfaitement
-    # concat_pays_ville(connection_new_database)
+    # # Batch update for sources_villes
+    # sources_villes_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in sources_villes]
+    # cursor.executemany("""
+    #     UPDATE public.contributions
+    #     SET sources = %s
+    #     WHERE id_meta IN (
+    #         SELECT public.ville.id_meta
+    #         FROM public.ville
+    #         JOIN public.periodes ON public.ville.id_periode = public.periodes.id_periode
+    #         WHERE public.ville.id_entite_ville = %s
+    #         AND (
+    #             (CAST(public.periodes.annee_debut AS int) <= %s AND CAST(public.periodes.annee_fin AS int) >= %s)
+    #             OR (CAST(public.periodes.annee_debut AS int) <= %s AND CAST(public.periodes.annee_fin AS int) >= %s)
+    #         )
+    #     );
+    # """, sources_villes_values)
+    # print(f"Inserted {len(sources_villes_values)} rows into sources_villes")
 
-    # # Batch insert for est_capitale
-    # find_capitales(connection_new_database)
+    # # Batch insert for wikipedia_ville
+    # wikipedia_villes_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in wikipedia_villes]
+    # cursor.executemany("""
+    #     UPDATE public.metadonnees
+    #     SET wikipedia = %s
+    #     WHERE id_meta IN (
+    #         SELECT public.ville.id_meta
+    #         FROM public.ville
+    #         JOIN public.periodes ON public.ville.id_periode = public.periodes.id_periode
+    #         WHERE public.ville.id_entite_ville = %s
+    #         AND (
+    #             (CAST(public.periodes.annee_debut AS int) <= %s AND CAST(public.periodes.annee_fin AS int) >= %s)
+    #             OR (CAST(public.periodes.annee_debut AS int) <= %s AND CAST(public.periodes.annee_fin AS int) >= %s)
+    #         )
+    #     );
+    # """, wikipedia_villes_values)
+    # print(f"Inserted {len(wikipedia_villes_values)} rows into wikipedia_ville")
+
+    # Batch insert pays_ville (the table where we store in which countries are the cities)
+    # ST_CONTAINS
+    # I will do an union of tables (entites_pays JOIN geometrie_pays) and (entites_villes JOIN existence_ville) to get the countries of the cities
+    # I will do a loop on the cities and for each city I will do a loop on the countries to see if the city is in the country using ST_CONTAINS
+    # I will also have to check the dates first
+    cursor.execute('''
+        INSERT INTO public.pays_ville (id_entite_pays, id_entite_ville, annee_debut, annee_fin) 
+        SELECT entites_pays.id_entite_pays, entites_villes.id_entite_ville, 
+        GREATEST(CAST(geometrie_pays.annee_debut AS int), CAST(existence_ville.annee_debut AS int)) AS annee_debut,
+        LEAST(CAST(geometrie_pays.annee_fin AS int), CAST(existence_ville.annee_fin AS int)) AS annee_fin
+        FROM public.geometrie_pays JOIN public.entites_pays ON public.geometrie_pays.id_entite_pays = public.entites_pays.id_entite_pays, 
+        public.existence_ville JOIN public.entites_villes ON public.existence_ville.id_entite_ville = public.entites_villes.id_entite_ville 
+        WHERE ST_CONTAINS(public.geometrie_pays.geometry, public.entites_villes.position_ville) AND (CAST(geometrie_pays.annee_debut AS int)<=CAST(existence_ville.annee_fin AS int) AND CAST(geometrie_pays.annee_fin AS int)>=CAST(existence_ville.annee_debut AS int))
+    ''')
+    print(f"Inserted rows into pays_ville")
+
+    # Concatener les éléments dont les id sont les mêmes et les annees se suivent parfaitement
+    # Dans la table pays_ville, concaténer les élements dont les id_entite_pays et id_entite_ville sont les mêmes et les annees se suivent parfaitement
+    concat_pays_ville(connection_new_database)
+
+    # Batch insert for est_capitale
+    find_capitales(connection_new_database)
 
     connection_new_database.commit()
     cursor.close()
