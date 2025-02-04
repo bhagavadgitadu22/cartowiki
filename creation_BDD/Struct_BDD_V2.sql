@@ -1,5 +1,4 @@
 CREATE EXTENSION postgis;
--- TODO : pgcrypt(o) pour le sha256 des hash_column et l'encodage des mdp
 
 CREATE SEQUENCE public.periodes_id_periode_seq;
 
@@ -7,7 +6,7 @@ CREATE TABLE public.Periodes (
                 id_periode INTEGER NOT NULL DEFAULT nextval('public.periodes_id_periode_seq'),
                 annee_debut SMALLINT,
                 annee_fin SMALLINT,
-                hash_column VARCHAR(32) DEFAULT 0 NOT NULL,
+                hash_column BYTEA, -- MODIF : VARCHAR(32) DEFAULT 0 NOT NULL
                 CONSTRAINT periodes_pk PRIMARY KEY (id_periode)
 );
 COMMENT ON TABLE public.Periodes IS 'Périodes de validité des informations reliées';
@@ -26,7 +25,7 @@ CREATE TABLE public.Modifications (
                 nouvelle_proposition BOOLEAN DEFAULT TRUE,
                 id_precedent INTEGER,
                 commentaire VARCHAR,
-                hash_column VARCHAR(32) DEFAULT 0 NOT NULL,
+                hash_column BYTEA, -- MODIF : VARCHAR(32) DEFAULT 0 NOT NULL
                 CONSTRAINT modifications_pk PRIMARY KEY (id_modification)
 );
 COMMENT ON TABLE public.Modifications IS 'Statut d''un élément (version actuelle, nouvelle proposition
@@ -48,7 +47,7 @@ CREATE TABLE public.Metadonnees (
                 id_meta INTEGER NOT NULL DEFAULT nextval('public.metadonnees_id_meta_seq'),
                 wikipedia VARCHAR,
                 description VARCHAR,
-                hash_column VARCHAR(32) DEFAULT 0 NOT NULL,
+                hash_column BYTEA, -- MODIF : VARCHAR(32) DEFAULT 0 NOT NULL
                 CONSTRAINT metadonnees_pk PRIMARY KEY (id_meta)
 );
 COMMENT ON TABLE public.Metadonnees IS 'Métadonnées nécessaires de chaque élément de la DB';
@@ -65,16 +64,16 @@ CREATE TABLE public.utilisateurs (
                 id_utilisateur INTEGER NOT NULL DEFAULT nextval('public.utilisateurs_id_utilisateur_seq'),
                 pseudo VARCHAR(32) NOT NULL,
                 mail VARCHAR(128) NOT NULL,
-                mdp_hash VARCHAR(60) NOT NULL, -- MODIF : VARCHAR(128)
-                niveau_admin BYTEA NOT NULL, -- MODIF : INTEGER DEFAULT 1 (voir COMMENT)
-                hash_column VARCHAR(32) DEFAULT 0 NOT NULL,
+                mdp_hash BYTEA NOT NULL, -- MODIF : VARCHAR(128) -> VARCHAR(60)
+                niveau_admin BOOLEAN, -- MODIF : INTEGER DEFAULT 1 (voir COMMENT) -> BYTEA NOT NULL (erreur)
+                hash_column BYTEA, -- MODIF : VARCHAR(32) DEFAULT 0 NOT NULL
                 CONSTRAINT utilisateurs_pk PRIMARY KEY (id_utilisateur)
 );
 COMMENT ON TABLE public.utilisateurs IS 'Utilisateurs de la DB';
 COMMENT ON COLUMN public.utilisateurs.pseudo IS 'Nom publique de l''utilisateur au sein de Cartowiki';
 COMMENT ON COLUMN public.utilisateurs.mail IS 'Email de l''utilisateur, servant à le recontacter
 TODO : Vérifier que c''est utile à terme';
-COMMENT ON COLUMN public.utilisateurs.mdp_hash IS 'On utilisera bcrypt avec les fonctions crypt() et gen_salt(''bf'', 12) de l''extension pgcrypt.';
+COMMENT ON COLUMN public.utilisateurs.mdp_hash IS 'On utilisera bcrypt avec les fonctions crypt() et gen_salt(''bf'', 12) de l''extension pgcrypto';
 COMMENT ON COLUMN public.utilisateurs.niveau_admin IS 'NULL : Contributeur ; 
 FALSE : Admin ;
 TRUE : Super Admin.';
@@ -91,7 +90,7 @@ CREATE TABLE public.Contributions (
                 id_utilisateur INTEGER NOT NULL,
                 date DATE DEFAULT CURRENT_DATE NOT NULL,
                 sources VARCHAR,
-                hash_column VARCHAR(32) DEFAULT 0 NOT NULL,
+                hash_column BYTEA, -- MODIF : VARCHAR(32) DEFAULT 0 NOT NULL
                 CONSTRAINT contributions_pk PRIMARY KEY (id_contribution)
 );
 COMMENT ON TABLE public.Contributions IS 'Contributions des utilisateurs aux éléments de la DB';
@@ -111,7 +110,7 @@ CREATE TABLE public.entites_pays (
                 couleur INTEGER NOT NULL, -- MODIF : VARCHAR(8)
                 id_meta INTEGER NOT NULL,
                 id_modification INTEGER NOT NULL,
-                hash_column VARCHAR(32) DEFAULT 0 NOT NULL,
+                hash_column BYTEA, -- MODIF : VARCHAR(32) DEFAULT 0 NOT NULL
                 CONSTRAINT entites_pays_pk PRIMARY KEY (id_entite_pays)
 );
 COMMENT ON TABLE public.entites_pays IS 'Coeur des caractéristiques d''un pays dans Cartowiki, ne dépendant ni du temps ni de l''espace';
@@ -132,7 +131,7 @@ CREATE TABLE public.Populations_pays (
                 annee SMALLINT NOT NULL, -- MODIF : DEFAULT -30000
                 id_meta INTEGER NOT NULL,
                 id_modification INTEGER NOT NULL,
-                hash_column VARCHAR(32) DEFAULT 0 NOT NULL,
+                hash_column BYTEA, -- MODIF : VARCHAR(32) DEFAULT 0 NOT NULL
                 CONSTRAINT populations_pays_pk PRIMARY KEY (id_pop_pays)
 );
 COMMENT ON TABLE public.Populations_pays IS 'Population du pays en une année donnée';
@@ -153,7 +152,7 @@ CREATE TABLE public.geometrie_pays (
                 id_periode INTEGER NOT NULL, -- MODIF :)
                 id_meta INTEGER NOT NULL,
                 id_modification INTEGER NOT NULL,
-                hash_column VARCHAR(32) DEFAULT 0 NOT NULL,
+                hash_column BYTEA, -- MODIF : VARCHAR(32) DEFAULT 0 NOT NULL
                 CONSTRAINT geometrie_pays_pk PRIMARY KEY (id_geometrie_pays)
 );
 COMMENT ON TABLE public.geometrie_pays IS 'Frontières d''un pays sur une période donnée';
@@ -171,7 +170,7 @@ CREATE TABLE public.entites_villes (
                 position_ville GEOMETRY NOT NULL,
                 id_meta INTEGER NOT NULL,
                 id_modification INTEGER NOT NULL,
-                hash_column VARCHAR(32) DEFAULT 0 NOT NULL,
+                hash_column BYTEA, -- MODIF : VARCHAR(32) DEFAULT 0 NOT NULL
                 CONSTRAINT entites_villes_pk PRIMARY KEY (id_entite_ville)
 );
 COMMENT ON TABLE public.entites_villes IS 'Coeur des caractéristiques d''une ville dans Cartowiki, ne dépendant ni du temps ni de l''espace';
@@ -191,7 +190,7 @@ CREATE TABLE public.Populations_villes (
                 annee SMALLINT NOT NULL, -- MODIF : DEFAULT -30000
                 id_meta INTEGER NOT NULL,
                 id_modification INTEGER NOT NULL,
-                hash_column VARCHAR(32) DEFAULT 0 NOT NULL,
+                hash_column BYTEA, -- MODIF : VARCHAR(32) DEFAULT 0 NOT NULL
                 CONSTRAINT populations_villes_pk PRIMARY KEY (id_pop_ville)
 );
 COMMENT ON TABLE public.Populations_villes IS 'Population d''une ville en une année donnée';
@@ -212,7 +211,7 @@ CREATE TABLE public.pays_ville (
                 id_periode INTEGER NOT NULL, -- MODIF :)
                 id_meta INTEGER NOT NULL,
                 id_modification INTEGER NOT NULL,
-                hash_column VARCHAR(32) DEFAULT 0 NOT NULL,
+                hash_column BYTEA, -- MODIF : VARCHAR(32) DEFAULT 0 NOT NULL
                 CONSTRAINT pays_ville_pk PRIMARY KEY (id_pays_ville)
 );
 COMMENT ON TABLE public.pays_ville IS 'Lien définissant l''appartenance d''une ville à un pays sur une période donnée';
@@ -232,7 +231,7 @@ CREATE TABLE public.capitales (
                 id_periode INTEGER NOT NULL, -- MODIF :)
                 id_meta INTEGER NOT NULL,
                 id_modification INTEGER NOT NULL,
-                hash_column VARCHAR(32) DEFAULT 0 NOT NULL,
+                hash_column BYTEA, -- MODIF : VARCHAR(32) DEFAULT 0 NOT NULL
                 CONSTRAINT capitales_pk PRIMARY KEY (id_capitale)
 );
 COMMENT ON TABLE public.capitales IS 'Spécifie si une ville est la capitale de son pays sur une période donnée';
@@ -250,7 +249,7 @@ CREATE TABLE public.existence_ville (
                 id_periode INTEGER NOT NULL, -- MODIF :)
                 id_meta INTEGER NOT NULL,
                 id_modification INTEGER NOT NULL,
-                hash_column VARCHAR(32) DEFAULT 0 NOT NULL,
+                hash_column BYTEA, -- MODIF : VARCHAR(32) DEFAULT 0 NOT NULL
                 CONSTRAINT existence_ville_pk PRIMARY KEY (id_existence_ville)
 );
 COMMENT ON TABLE public.existence_ville IS 'Intervalles d''existence de l''entité "ville" en tant que position géographique';
@@ -267,7 +266,7 @@ CREATE TABLE public.noms_villes (
                 nom_ville VARCHAR(128) NOT NULL,
                 id_meta INTEGER NOT NULL,
                 id_modification INTEGER NOT NULL,
-                hash_column VARCHAR(32) DEFAULT 0 NOT NULL,
+                hash_column BYTEA, -- MODIF : VARCHAR(32) DEFAULT 0 NOT NULL
                 CONSTRAINT noms_villes_pk PRIMARY KEY (id_nom_ville)
 );
 COMMENT ON TABLE public.noms_villes IS 'Nomenclature des noms de ville';
@@ -286,7 +285,7 @@ CREATE TABLE public.ville (
                 id_periode INTEGER NOT NULL, -- MODIF :)
                 id_meta INTEGER NOT NULL,
                 id_modification INTEGER NOT NULL,
-                hash_column VARCHAR(32) DEFAULT 0 NOT NULL,
+                hash_column BYTEA, -- MODIF : VARCHAR(32) DEFAULT 0 NOT NULL
                 CONSTRAINT ville_pk PRIMARY KEY (id_ville)
 );
 COMMENT ON TABLE public.ville IS 'Nom d''une ville sur une période donnée';
@@ -304,7 +303,7 @@ CREATE TABLE public.noms_pays (
                 nom_pays VARCHAR(256) NOT NULL,
                 id_meta INTEGER NOT NULL,
                 id_modification INTEGER NOT NULL,
-                hash_column VARCHAR(32) DEFAULT 0 NOT NULL,
+                hash_column BYTEA, -- MODIF : VARCHAR(32) DEFAULT 0 NOT NULL
                 CONSTRAINT noms_pays_pk PRIMARY KEY (id_nom_pays)
 );
 COMMENT ON TABLE public.noms_pays IS 'Nomenclature des noms de pays';
@@ -324,7 +323,7 @@ CREATE TABLE public.pays (
                 id_periode INTEGER NOT NULL, -- MODIF :)
                 id_meta INTEGER NOT NULL,
                 id_modification INTEGER NOT NULL,
-                hash_column VARCHAR(32) DEFAULT 0 NOT NULL,
+                hash_column BYTEA, -- MODIF : VARCHAR(32) DEFAULT 0 NOT NULL
                 CONSTRAINT pays_pk PRIMARY KEY (id_pays)
 );
 COMMENT ON TABLE public.pays IS 'Nom et type d''un pays (proto-état ou non) sur une période donnée';
