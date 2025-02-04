@@ -107,7 +107,7 @@ CREATE SEQUENCE public.entites_pays_id_entite_pays_seq;
 
 CREATE TABLE public.entites_pays (
                 id_entite_pays INTEGER NOT NULL DEFAULT nextval('public.entites_pays_id_entite_pays_seq'),
-                couleur INTEGER NOT NULL, -- MODIF : VARCHAR(8)
+                couleur VARCHAR(8) NOT NULL, -- MODIF : VARCHAR(8)
                 id_meta INTEGER NOT NULL,
                 id_modification INTEGER NOT NULL,
                 hash_column BYTEA, -- MODIF : VARCHAR(32) DEFAULT 0 NOT NULL
