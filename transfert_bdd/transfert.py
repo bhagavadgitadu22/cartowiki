@@ -431,23 +431,62 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
 
     # Batch update for sources_pays
     sources_pays_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in sources_pays]
-    cursor.executemany("""
-        UPDATE public.pays 
+    query = """
+        UPDATE public.contributions
         SET sources = %s
-        WHERE id_entite_pays = %s
-        AND ((CAST(annee_debut AS int) <= %s AND CAST(annee_fin AS int) >= %s) 
-        OR (CAST(annee_debut AS int) <= %s AND CAST(annee_fin AS int) >= %s))
-    """, sources_pays_values)
+        WHERE id_meta IN (
+            SELECT public.pays.id_meta
+            FROM public.pays
+            JOIN public.periodes ON public.pays.id_periode = public.periodes.id_periode
+            WHERE public.pays.id_entite_pays = %s
+            AND (
+                (CAST(public.periodes.annee_debut AS int) <= %s AND CAST(public.periodes.annee_fin AS int) >= %s)
+                OR (CAST(public.periodes.annee_debut AS int) <= %s AND CAST(public.periodes.annee_fin AS int) >= %s)
+            )
+        );
+    """
+    cursor.executemany(query, sources_pays_values)
+    # cursor.executemany(query, sources_pays_values)
     print(f"Inserted {len(sources_pays_values)} rows into sources_pays")
+    # Test : Ca fonctionne quand je rentre ça a la main dans pgAdmin
+    # UPDATE public.contributions
+    # SET sources = 'yo'
+    # WHERE id_meta IN (SELECT id_meta
+    #     FROM public.pays
+    #     JOIN public.periodes ON public.pays.id_periode = public.periodes.id_periode
+    #     WHERE public.pays.id_entite_pays = 23
+    #     AND (
+    #         (CAST(public.periodes.annee_debut AS int) <= 0 AND CAST(public.periodes.annee_fin AS int) >= 0)
+    #         OR (CAST(public.periodes.annee_debut AS int) <= 0 AND CAST(public.periodes.annee_fin AS int) >= 0)
+    #     )
+    # 	)
+
+    # SELECT sources FROM public.contributions
+    #     WHERE id_meta IN (SELECT id_meta
+    #         FROM public.pays
+    #         JOIN public.periodes ON public.pays.id_periode = public.periodes.id_periode
+    #         WHERE public.pays.id_entite_pays = 23
+    #         AND (
+    #             (CAST(public.periodes.annee_debut AS int) <= 0 AND CAST(public.periodes.annee_fin AS int) >= 0)
+    #             OR (CAST(public.periodes.annee_debut AS int) <= 0 AND CAST(public.periodes.annee_fin AS int) >= 0)
+    #         )
+	# 		)
 
     # Batch insert for wikipedia_pays
     wikipedia_pays_values = [(row["valeur"], row["id_element"], row["annee_debut"], row["annee_debut"], row["annee_fin"], row["annee_fin"],) for row in wikipedia_pays]
     cursor.executemany("""
-        UPDATE public.pays
+        UPDATE public.metadonnees
         SET wikipedia = %s
-        WHERE id_entite_pays = %s
-        AND ((CAST(annee_debut AS int) <= %s AND CAST(annee_fin AS int) >= %s)
-        OR (CAST(annee_debut AS int) <= %s AND CAST(annee_fin AS int) >= %s))
+        WHERE id_meta IN (
+            SELECT public.pays.id_meta
+            FROM public.pays
+            JOIN public.periodes ON public.pays.id_periode = public.periodes.id_periode
+            WHERE public.pays.id_entite_pays = %s
+            AND (
+                (CAST(public.periodes.annee_debut AS int) <= %s AND CAST(public.periodes.annee_fin AS int) >= %s)
+                OR (CAST(public.periodes.annee_debut AS int) <= %s AND CAST(public.periodes.annee_fin AS int) >= %s)
+            )
+        );
     """, wikipedia_pays_values)
     print(f"Inserted {len(wikipedia_pays_values)} rows into wikipedia_pays")
 
@@ -515,6 +554,7 @@ def insert_data_into_new_database(connection_new_database, geojson, caracs):
     # find_capitales(connection_new_database)
 
     connection_new_database.commit()
+    cursor.close()
 
 
 
@@ -545,6 +585,8 @@ def insert_metadonnees_and_contributions(connection, id_utilisateur, date, lengt
         VALUES (%s, %s, %s)
     """, [(id_utilisateur, id_metas[i], date) for i in range(length)])
     print(f"Inserted {length} rows into contributions")
+
+    cursor.close()
     return id_metas
 
 
@@ -560,6 +602,8 @@ def insert_modifications(connection, length):
         id_modification = cursor.fetchone()[0]
         id_modifications.append(id_modification)
     print(f"Inserted {length} rows into modifications")
+
+    cursor.close()
     return id_modifications
 
 
@@ -578,6 +622,8 @@ def insert_periodes(connection, donnees_a_inserer):
         id_periode = cursor.fetchone()[0]
         id_periodes.append(id_periode)
     print(f"Inserted {len(periodes)} rows into periodes")
+
+    cursor.close()
     return id_periodes
 
 
@@ -643,6 +689,8 @@ def concat_pays_ville(connection):
 
     print(f"Inserted {len(new_rows_concatenated)} rows into pays_ville")
 
+    cursor.close()
+
 
 
 def find_capitales(connection):
@@ -657,6 +705,8 @@ def find_capitales(connection):
         SELECT id_pays_ville, GREATEST(CAST(annee_debut AS int), %s), LEAST(CAST(annee_fin AS int), %s) FROM public.pays_ville WHERE id_entite_ville = %s AND CAST(annee_fin AS int) >= %s AND  CAST(annee_debut AS int) <= %s
     """, est_capitale_values)
     print(f"Inserted {len(est_capitale_values)} rows into capitales")
+
+    cursor.close()
 
 
 
