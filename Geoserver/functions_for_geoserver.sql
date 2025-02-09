@@ -89,7 +89,7 @@ BEGIN
             AND annee >= year 
             ORDER BY ABS(CAST(annee AS int) - year) 
             LIMIT 1
-        ) OR populations_pays.annee IS NULL)
+        ) OR populations_pays.annee IS NULL);
 END;
 $$ LANGUAGE plpgsql;
 -- Il faut vérifier que l'annee_population est bien supérieure ou égale à year et l'annee la moins éloignée de year pour les autres valeurs de population du pays. C'est à ça que sert la sous-requête.
@@ -175,7 +175,7 @@ BEGIN
             AND annee >= year 
             ORDER BY ABS(CAST(annee AS int) - year) 
             LIMIT 1
-        ) OR populations_villes.annee IS NULL)
+        ) OR populations_villes.annee IS NULL);
 END;
 $$ LANGUAGE plpgsql;
 -- You can't use alias AS in WHERE statements
