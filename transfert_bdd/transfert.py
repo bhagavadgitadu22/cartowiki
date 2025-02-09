@@ -189,7 +189,7 @@ def connect_to_pgsql_database():
             port="5432",
             user="Superuser",
             password="password",
-            database="cartowiki"
+            database="Cartowiki"
         )
         return connection
     except Exception as error:
@@ -204,7 +204,7 @@ def insert_data_into_new_database(connection_new_database):
 
     # Remplissage de la table utilisateurs
     cursor.execute("""INSERT INTO public.utilisateurs (pseudo, mail, mdp_hash, niveau_admin) 
-            VALUES ('test', 'test@hotmail.fr', 'test', TRUE) 
+            VALUES ('test', 'test@hotmail.fr', 'test', 2) 
             RETURNING id_utilisateur
     """)
     id_utilisateur = cursor.fetchone()[0]

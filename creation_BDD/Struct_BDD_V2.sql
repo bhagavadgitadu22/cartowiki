@@ -65,7 +65,7 @@ CREATE TABLE public.utilisateurs (
                 pseudo VARCHAR(32) NOT NULL,
                 mail VARCHAR(128) NOT NULL,
                 mdp_hash BYTEA NOT NULL, -- MODIF : VARCHAR(128) -> VARCHAR(60)
-                niveau_admin BOOLEAN, -- MODIF : INTEGER DEFAULT 1 (voir COMMENT) -> BYTEA NOT NULL (erreur)
+                niveau_admin INTEGER DEFAULT 0, -- MODIF : INTEGER DEFAULT 1 (voir COMMENT) -> BYTEA NOT NULL (erreur)
                 hash_column BYTEA, -- MODIF : VARCHAR(32) DEFAULT 0 NOT NULL
                 CONSTRAINT utilisateurs_pk PRIMARY KEY (id_utilisateur)
 );
@@ -74,9 +74,9 @@ COMMENT ON COLUMN public.utilisateurs.pseudo IS 'Nom publique de l''utilisateur 
 COMMENT ON COLUMN public.utilisateurs.mail IS 'Email de l''utilisateur, servant à le recontacter
 TODO : Vérifier que c''est utile à terme';
 COMMENT ON COLUMN public.utilisateurs.mdp_hash IS 'On utilisera bcrypt avec les fonctions crypt() et gen_salt(''bf'', 12) de l''extension pgcrypto';
-COMMENT ON COLUMN public.utilisateurs.niveau_admin IS 'NULL : Contributeur ; 
-FALSE : Admin ;
-TRUE : Super Admin.';
+COMMENT ON COLUMN public.utilisateurs.niveau_admin IS '0 : Contributeur ; 
+1 : Admin ;
+2 : Super Admin.';
 COMMENT ON COLUMN public.utilisateurs.hash_column IS 'SHA256';
 
 
