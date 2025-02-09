@@ -61,13 +61,13 @@ WHERE id_entite_ville = %id_entite_ville%
 SELECT id_entite_ville, nom_ville, annee_debut, annee_fin
 FROM public.noms_villes JOIN public.ville
 ON noms_villes.id_nom_ville = ville.id_nom_ville
-JOIN public.periodes ON ville.id_periode = periodes .id_periode
+JOIN public.periodes ON ville.id_periode = periodes.id_periode
 WHERE id_entite_ville = %id_entite_ville%
 
 -- Récupérer tout ce qui est relatif aux villes pour une annee donnée
 -- all_cities_one_time
 -- La population n'étant pas obligatoire on utilise un LEFT JOIN
-SELECT entites_villes.id_entite_ville, entites_villes.position_ville, populations_villes.annee AS annee_population, populations_villes.population, noms_villes.nom_ville, ville_periodes.annee_debut AS annee_debut_nom, ville_periodes.annee_fin AS annee_fin_nom
+SELECT entites_villes.id_entite_ville, populations_villes.annee AS annee_population, populations_villes.population, noms_villes.nom_ville, ville_periodes.annee_debut AS annee_debut_nom, ville_periodes.annee_fin AS annee_fin_nom, entites_villes.position_ville
 FROM public.entites_villes
 LEFT JOIN public.populations_villes ON entites_villes.id_entite_ville = populations_villes.id_entite_ville
 JOIN public.ville ON entites_villes.id_entite_ville = ville.id_entite_ville
