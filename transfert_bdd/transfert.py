@@ -311,7 +311,7 @@ def insert_data_into_new_database(connection_new_database):
         entites_villes_values[i] = (entites_villes_values[i][0], entites_villes_values[i][1], id_modifications[i], id_metas[i],)
     cursor.executemany("""
         INSERT INTO public.entites_villes (id_entite_ville, position_ville, id_modification, id_meta)
-        VALUES (%s, ST_GeomFromGeoJSON(%s), %s, %s)
+        VALUES (%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326), %s, %s)
     """, entites_villes_values)
     print(f"Inserted {len(entites_villes_values)} rows into entites_villes")
 
@@ -329,7 +329,7 @@ def insert_data_into_new_database(connection_new_database):
 
     cursor.executemany("""
         INSERT INTO public.geometrie_pays (id_entite_pays, geometrie, id_periode, id_modification, id_meta)
-        VALUES (%s, ST_GeomFromGeoJSON(%s), %s, %s, %s)
+        VALUES (%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326), %s, %s, %s)
     """, geometrie_pays_values)
     print(f"Inserted {len(geometrie_pays_values)} rows into geometrie_pays")
 
