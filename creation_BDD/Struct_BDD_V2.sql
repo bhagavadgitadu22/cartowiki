@@ -148,7 +148,7 @@ CREATE SEQUENCE public.geometrie_pays_id_geometrie_pays_seq;
 CREATE TABLE public.geometrie_pays (
                 id_geometrie_pays INTEGER NOT NULL DEFAULT nextval('public.geometrie_pays_id_geometrie_pays_seq'),
                 id_entite_pays INTEGER NOT NULL,
-                geometrie geometry(Geometry, 3857) NOT NULL,-- SRID 3857
+                geometrie geometry(Geometry, 4326) NOT NULL,-- SRID 4326
                 id_periode INTEGER NOT NULL, -- MODIF :)
                 id_meta INTEGER NOT NULL,
                 id_modification INTEGER NOT NULL,
@@ -167,7 +167,7 @@ CREATE SEQUENCE public.entites_villes_id_entite_ville_seq;
 
 CREATE TABLE public.entites_villes (
                 id_entite_ville INTEGER NOT NULL DEFAULT nextval('public.entites_villes_id_entite_ville_seq'),
-                position_ville geometry(Geometry, 3857) NOT NULL,  -- SRID 3857
+                position_ville geometry(Geometry, 4326) NOT NULL,  -- SRID 4326
                 id_meta INTEGER NOT NULL,
                 id_modification INTEGER NOT NULL,
                 hash_column BYTEA, -- MODIF : VARCHAR(32) DEFAULT 0 NOT NULL

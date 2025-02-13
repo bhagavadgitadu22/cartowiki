@@ -189,7 +189,7 @@ def connect_to_pgsql_database():
             port="5432",
             user="Superuser",
             password="password",
-            database="Cartowiki"
+            database="Cartowiki4"
         )
         return connection
     except Exception as error:
@@ -570,7 +570,24 @@ def insert_data_into_new_database(connection_new_database):
     pays_ville = cursor.fetchall()
 
     # Remplir la table metadonnees, contributions, modifications pour pays_ville
-    id_metas, id_modifications = insert_metadonnees_contributions_and_modifications(connection_new_database, id_utilisateur, date, len(pays_ville))
+    # id_metas, id_modifications = insert_metadonnees_contributions_and_modifications(connection_new_database, id_utilisateur, date, len(pays_ville))
+    cursor.execute("""
+            INSERT INTO public.metadonnees (id_meta) VALUES (100000)
+        """)
+    print(f"Inserted {1} rows into metadonnees")
+
+    # Batch insert for contributions
+    cursor.executemany("""
+        INSERT INTO public.contributions (id_utilisateur, id_meta, date)
+        VALUES (%s, %s, %s)
+    """, [(id_utilisateur, 100000, date)])
+    print(f"Inserted {1} rows into contributions")
+
+    # Batch insert for modifications
+    cursor.execute("""
+            INSERT INTO public.modifications (id_modification) VALUES (100000)
+        """)
+    print(f"Inserted {1} rows into modifications")
 
     # Remplir la table periode pour pays_ville
     periodes = [(row[2], row[3], ) for row in pays_ville]
@@ -588,8 +605,8 @@ def insert_data_into_new_database(connection_new_database):
     # Remplir la table pays_ville
     pays_ville_values = [(row[0], row[1], row[2], row[3], 0, 0, 0,) for row in pays_ville]
     for i in range(len(pays_ville_values)):
-        pays_ville_values[i] = (pays_ville_values[i][0], pays_ville_values[i][1], id_periodes[i], id_modifications[i], id_metas[i],)
-    print(f"Inserted rows into pays_ville")
+        pays_ville_values[i] = (pays_ville_values[i][0], pays_ville_values[i][1], id_periodes[i], 100000, 100000,)
+    print(f"Created rows for pays_ville")
 
     cursor.executemany("""
         INSERT INTO public.pays_ville (id_entite_pays, id_entite_ville, id_periode, id_modification, id_meta)
@@ -730,27 +747,39 @@ def concat_pays_ville(connection, id_utilisateur, date):
     
     # Étape 4 : Mettre à jour les lignes en supprimant les anciennes lignes et en les remplaçant par les nouvelles lignes
     # Supprimer d'abord les lignes correspondantes dans les tables modifications, contributions, metadonnees et periodes
+    cursor.execute("""
+        DELETE FROM public.pays_ville;
+    """)
+    cursor.execute("""
+        DELETE FROM public.modifications WHERE id_modification = 100000;
+    """)
+    cursor.execute("""
+        DELETE FROM public.contributions WHERE id_meta = 100000;
+    """)
+    cursor.execute("""
+        DELETE FROM public.metadonnees WHERE id_meta = 100000;
+    """)
     compteur = 0
     for row in rows_to_concat:
-        cursor.execute("""
-            DELETE FROM pays_ville WHERE id_pays_ville = %s;
-        """, (row[0],))
-        cursor.execute("""
-            DELETE FROM modifications WHERE id_modification = %s;
-        """, (row[6],))
-        cursor.execute("""
-            DELETE FROM contributions WHERE id_meta = %s;
-        """, (row[7],))
-        cursor.execute("""
-            DELETE FROM metadonnees WHERE id_meta = %s;
-        """, (row[7],))
+        # cursor.execute("""
+        #     DELETE FROM pays_ville WHERE id_pays_ville = %s;
+        # """, (row[0],))
+        # cursor.execute("""
+        #     DELETE FROM modifications WHERE id_modification = %s;
+        # """, (row[6],))
+        # cursor.execute("""
+        #     DELETE FROM contributions WHERE id_meta = %s;
+        # """, (row[7],))
+        # cursor.execute("""
+        #     DELETE FROM metadonnees WHERE id_meta = %s;
+        # """, (row[7],))
         cursor.execute("""
             DELETE FROM periodes WHERE id_periode = %s;
         """, (row[5],))
         compteur += 1
         if compteur % 1000 == 0:
-            print(f"Deleted {compteur} rows from modifications, contributions, metadonnees, periodes and pays_ville")
-    print(f"Deleted {len(rows_to_concat)} rows from modifications, contributions, metadonnees, periodes and pays_ville")
+            print(f"Deleted {compteur} rows from periodes")
+    print(f"Deleted {len(rows_to_concat)} rows from periodes")
 
     # Remplir une liste avec les nouvelles lignes concaténées
     simple_list_new_rows_concatenated = []
