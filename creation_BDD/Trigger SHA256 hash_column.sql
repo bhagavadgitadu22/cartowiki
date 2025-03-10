@@ -1,39 +1,26 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
--- Création de la fonction de calcul de SHA256
-CREATE OR REPLACE FUNCTION sha256(TEXT)
-RETURNS BYTEA AS $$
-SELECT digest($1, 'sha256')
-$$ LANGUAGE SQL STRICT IMMUTABLE;
-
-
--- Création de la fonction helper
+-- Calcul et affecte la checksum de la ligne créée
 CREATE OR REPLACE FUNCTION generate_sha256_hash_column()
 RETURNS TRIGGER AS $$
 DECLARE
     concatenated_values TEXT;
-    nom_col TEXT;
-    column_value TEXT;
+    sha_val BYTEA;
 BEGIN
-    concatenated_values := '';
-
-    -- Boucle sur les colonnes de la ligne NEW
-    FOR nom_col IN SELECT column_name FROM information_schema.columns WHERE table_name = TG_TABLE_NAME LOOP
-        -- Récupération de la valeur de la colonne (null-safe)
-        IF nom_col <> 'hash_column' THEN
-          EXECUTE format('SELECT ($1).%I::TEXT', nom_col) INTO column_value USING NEW;
-          concatenated_values := concatenated_values || COALESCE(column_value, '');
-        END IF;
-    END LOOP;
-
-    -- Calcul du hash SHA256
-    NEW.hash_column := sha256(concatenated_values);
-
+    -- Concaténer les valeurs de NEW en ignorant par défaut la colonne "hash_column"
+    concatenated_values := concatenate_record_columns(NEW, ARRAY['hash_column']);
+    -- RAISE NOTICE 'Valeur concaténée : %', concatenated_values; -- DEBUG
+    
+    -- Calcul du hash SHA256 et assignation à hash_column
+    sha_val := sha256(concatenated_values);
+    NEW.hash_column := sha_val;
+    -- RAISE NOTICE 'Hash calculé : %', encode(sha_val, 'hex'); -- DEBUG
+    
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-
+-- Création générique de tous les triggers
 DO $$
 DECLARE
     nom_table TEXT;
@@ -52,3 +39,23 @@ BEGIN
     END LOOP;
 END;
 $$;
+
+-- Fonction de comparaison des checksums
+CREATE OR REPLACE FUNCTION check_hash_column(nom_table TEXT, row_id INTEGER)
+RETURNS BOOLEAN AS $$
+DECLARE
+    expected_hash BYTEA;
+    stored_hash BYTEA;
+BEGIN
+    -- Calcul du hash attendu en fonction des valeurs actuelles de la ligne
+    expected_hash := sha256(concatenate_column_values(nom_table, row_id));
+
+    -- Récupération du hash stocké dans la table
+    EXECUTE format('SELECT hash_column FROM %I WHERE %I = $1', nom_table, get_primary_keys_names(nom_table))
+    INTO stored_hash
+    USING row_id;
+
+    -- Comparaison des deux valeurs
+    RETURN stored_hash IS NOT DISTINCT FROM expected_hash;
+END;
+$$ LANGUAGE plpgsql;
